@@ -1,7 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Launch screen shown until Flutter draws its first frame. -->
+<!-- Launch screen shown until Flutter draws its first frame (pre-Android 12). -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/splash_background" />
+    <!-- Go-blue tile behind the logo: the white foreground alone vanishes on the light background.
+         72dp is the visible area of the 108dp adaptive-icon foreground, so it matches the launcher icon. -->
+    <item
+        android:width="72dp"
+        android:height="72dp"
+        android:gravity="center">
+        <shape android:shape="rectangle">
+            <corners android:radius="16dp" />
+            <gradient
+                android:angle="315"
+                android:startColor="#00ADD8"
+                android:endColor="#0076A0"
+                android:type="linear" />
+        </shape>
+    </item>
     <item>
         <bitmap
             android:gravity="center"
