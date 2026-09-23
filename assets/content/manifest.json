@@ -1,0 +1,44 @@
+{
+  "sections": [
+    {
+      "id": "basic",
+      "title": "Basic",
+      "subtitle": "Syntax, types, control flow and the core building blocks of Go.",
+      "icon": "school",
+      "color": "#00ADD8",
+      "lessons": [
+        { "file": "basic/01_introduction.md", "summary": "What Go is, why it exists and your first program." },
+        { "file": "basic/02_variables_and_types.md", "summary": "Declaring variables, constants and Go's basic types." },
+        { "file": "basic/03_control_flow.md", "summary": "if, for and switch — the only loops and branches you need." },
+        { "file": "basic/04_functions.md", "summary": "Multiple return values, variadic functions and closures." },
+        { "file": "basic/05_slices_and_maps.md", "summary": "Go's workhorse collections and how they behave." },
+        { "file": "basic/06_structs_and_methods.md", "summary": "Modeling data with structs and attaching behavior." }
+      ]
+    },
+    {
+      "id": "advanced",
+      "title": "Advanced",
+      "subtitle": "Interfaces, concurrency, generics and idiomatic error handling.",
+      "icon": "rocket",
+      "color": "#8B5CF6",
+      "lessons": [
+        { "file": "advanced/01_interfaces.md", "summary": "Implicit interfaces and designing small abstractions." },
+        { "file": "advanced/02_error_handling.md", "summary": "Errors as values, wrapping, errors.Is and errors.As." },
+        { "file": "advanced/03_goroutines_and_channels.md", "summary": "Lightweight concurrency and communicating by sharing." },
+        { "file": "advanced/04_generics.md", "summary": "Type parameters and constraints since Go 1.18." }
+      ]
+    },
+    {
+      "id": "practice",
+      "title": "Practice",
+      "subtitle": "Hands-on exercises and small projects to lock in what you learned.",
+      "icon": "code",
+      "color": "#F59E0B",
+      "lessons": [
+        { "file": "practice/01_fizzbuzz_and_warmups.md", "summary": "Short exercises to warm up your Go muscles." },
+        { "file": "practice/02_cli_todo_app.md", "summary": "Build a command-line todo list backed by a JSON file." },
+        { "file": "practice/03_rest_api.md", "summary": "A small JSON REST API using only the standard library." }
+      ]
+    }
+  ]
+}
