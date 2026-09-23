@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'home_screen.dart';
 import 'practice_screen.dart';
@@ -17,10 +18,31 @@ class Shell extends StatefulWidget {
   State<Shell> createState() => _ShellState();
 }
 
-class _ShellState extends State<Shell> {
+class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
   int _index = 0;
 
-  void _select(int i) => setState(() => _index = i);
+  /// Fades the newly selected tab in. Tabs stay alive in the IndexedStack
+  /// (scroll positions are kept); hidden ones have their tickers paused.
+  late final _fade = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 220),
+    value: 1,
+  );
+  late final _opacity = CurvedAnimation(parent: _fade, curve: Curves.easeOut);
+
+  void _select(int i) {
+    if (i == _index) return;
+    HapticFeedback.selectionClick();
+    setState(() => _index = i);
+    _fade.forward(from: 0.3);
+  }
+
+  @override
+  void dispose() {
+    _opacity.dispose();
+    _fade.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,9 +53,12 @@ class _ShellState extends State<Shell> {
         if (!didPop) _select(0);
       },
       child: Scaffold(
-        body: IndexedStack(
-          index: _index,
-          children: const [HomeScreen(), PracticeScreen(), ProgressScreen()],
+        body: FadeTransition(
+          opacity: _opacity,
+          child: IndexedStack(
+            index: _index,
+            children: const [HomeScreen(), PracticeScreen(), ProgressScreen()],
+          ),
         ),
         bottomNavigationBar: NavigationBar(
           selectedIndex: _index,
@@ -45,8 +70,8 @@ class _ShellState extends State<Shell> {
               label: 'Learn',
             ),
             NavigationDestination(
-              icon: Icon(Icons.extension_outlined),
-              selectedIcon: Icon(Icons.extension_rounded),
+              icon: Icon(Icons.quiz_outlined),
+              selectedIcon: Icon(Icons.quiz_rounded),
               label: 'Practice',
             ),
             NavigationDestination(

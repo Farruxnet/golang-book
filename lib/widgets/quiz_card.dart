@@ -1,83 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../data/models.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import 'common.dart';
 import 'markdown_view.dart';
 
-const kCorrect = Color(0xFF22A06B);
-const kWrong = Color(0xFFE5484D);
-
-/// Interactive multiple-choice question. The answer is saved in [AppState],
-/// so the card looks the same wherever the quiz appears.
+/// Multiple-choice question inside a lesson. The answer is saved in
+/// [AppState], so the card looks the same wherever the quiz appears.
 class QuizCard extends StatelessWidget {
-  const QuizCard({
-    super.key,
-    required this.quiz,
-    this.label = 'Quick check',
-    this.showRetry = true,
-    this.onAnswered,
-  });
+  const QuizCard({super.key, required this.quiz});
 
   final Quiz quiz;
-  final String label;
-  final bool showRetry;
-  final ValueChanged<bool>? onAnswered;
 
   @override
   Widget build(BuildContext context) {
     final state = context.appState;
     final theme = Theme.of(context);
-    final accent = quiz.lesson.section.color;
+    final scheme = theme.colorScheme;
     final selected = state.answerOf(quiz);
     final answered = selected != null;
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      margin: const EdgeInsets.symmetric(vertical: 12),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: accent.withValues(alpha: 0.35), width: 1.5),
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppCard.radius),
+        border: Border.all(color: scheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
-              Icon(Icons.quiz_rounded, size: 18, color: accent),
+              Icon(Icons.help_outline_rounded, size: 18, color: scheme.primary),
               const SizedBox(width: 6),
               Text(
-                label.toUpperCase(),
-                style: TextStyle(
-                  color: accent,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                '+${AppState.xpPerQuiz} XP',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
+                'Quick check',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: scheme.primary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          MarkdownView(
-            data: quiz.question,
-            accent: accent,
-            fontScale: state.fontScale * 0.95,
-          ),
+          const SizedBox(height: 6),
+          MarkdownView(data: quiz.question, fontScale: state.fontScale * 0.95),
           const SizedBox(height: 10),
           for (var i = 0; i < quiz.options.length; i++)
             QuizOption(
               index: i,
               text: quiz.options[i],
-              accent: accent,
               status: !answered
                   ? OptionStatus.idle
                   : i == quiz.answer
@@ -85,23 +59,17 @@ class QuizCard extends StatelessWidget {
                   : i == selected
                   ? OptionStatus.wrong
                   : OptionStatus.dimmed,
-              onTap: answered
-                  ? null
-                  : () {
-                      final correct = state.answer(quiz, i);
-                      onAnswered?.call(correct);
-                    },
+              onTap: answered ? null : () => state.answer(quiz, i),
             ),
           if (answered) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             QuizFeedback(quiz: quiz, correct: selected == quiz.answer),
-            if (showRetry && selected != quiz.answer)
+            if (selected != quiz.answer)
               Align(
                 alignment: Alignment.centerRight,
-                child: TextButton.icon(
+                child: TextButton(
                   onPressed: () => state.clearAnswers([quiz]),
-                  icon: const Icon(Icons.refresh_rounded, size: 18),
-                  label: const Text('Try again'),
+                  child: const Text('Try again'),
                 ),
               ),
           ],
@@ -118,89 +86,116 @@ class QuizOption extends StatelessWidget {
     super.key,
     required this.index,
     required this.text,
-    required this.accent,
     required this.status,
     this.onTap,
   });
 
   final int index;
   final String text;
-  final Color accent;
   final OptionStatus status;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final (Color border, Color fill, Widget badge) = switch (status) {
+    final letter = String.fromCharCode(65 + index);
+    final (
+      Color border,
+      Color fill,
+      Color badge,
+      Color onBadge,
+    ) = switch (status) {
       OptionStatus.correct => (
-        kCorrect,
-        kCorrect.withValues(alpha: 0.12),
-        const Icon(Icons.check_rounded, size: 18, color: Colors.white),
+        AppTheme.correct,
+        AppTheme.correct.withValues(alpha: 0.1),
+        AppTheme.correct,
+        Colors.white,
       ),
       OptionStatus.wrong => (
-        kWrong,
-        kWrong.withValues(alpha: 0.12),
-        const Icon(Icons.close_rounded, size: 18, color: Colors.white),
+        AppTheme.wrong,
+        AppTheme.wrong.withValues(alpha: 0.1),
+        AppTheme.wrong,
+        Colors.white,
       ),
       OptionStatus.selected => (
-        accent,
-        accent.withValues(alpha: 0.1),
-        Text(
-          String.fromCharCode(65 + index),
-          style: const TextStyle(
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-          ),
-        ),
+        scheme.primary,
+        scheme.primary.withValues(alpha: 0.08),
+        scheme.primary,
+        scheme.onPrimary,
       ),
       _ => (
         scheme.outlineVariant,
         Colors.transparent,
-        Text(
-          String.fromCharCode(65 + index),
-          style: TextStyle(fontWeight: FontWeight.w800, color: accent),
-        ),
+        scheme.surfaceContainer,
+        scheme.onSurfaceVariant,
       ),
     };
-    final badgeColor = switch (status) {
-      OptionStatus.correct => kCorrect,
-      OptionStatus.wrong => kWrong,
-      OptionStatus.selected => accent,
-      _ => accent.withValues(alpha: 0.12),
-    };
+    final radius = BorderRadius.circular(12);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 200),
         opacity: status == OptionStatus.dimmed ? 0.5 : 1,
-        child: Material(
-          color: fill,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: BorderSide(color: border, width: 1.5),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          decoration: BoxDecoration(
+            color: fill,
+            borderRadius: radius,
+            border: Border.all(color: border, width: 1.2),
           ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-              child: Row(
-                children: [
-                  Container(
-                    width: 30,
-                    height: 30,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: badgeColor,
-                      shape: BoxShape.circle,
+          child: Material(
+            type: MaterialType.transparency,
+            child: InkWell(
+              borderRadius: radius,
+              onTap: onTap == null
+                  ? null
+                  : () {
+                      HapticFeedback.selectionClick();
+                      onTap!();
+                    },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 11,
+                ),
+                child: Row(
+                  children: [
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      width: 28,
+                      height: 28,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: badge,
+                        shape: BoxShape.circle,
+                      ),
+                      child: switch (status) {
+                        OptionStatus.correct => Icon(
+                          Icons.check_rounded,
+                          size: 17,
+                          color: onBadge,
+                        ),
+                        OptionStatus.wrong => Icon(
+                          Icons.close_rounded,
+                          size: 17,
+                          color: onBadge,
+                        ),
+                        _ => Text(
+                          letter,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: onBadge,
+                          ),
+                        ),
+                      },
                     ),
-                    child: badge,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(child: InlineCodeText(text, accent: accent)),
-                ],
+                    const SizedBox(width: 12),
+                    Expanded(child: InlineCodeText(text)),
+                  ],
+                ),
               ),
             ),
           ),
@@ -218,25 +213,27 @@ class QuizFeedback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = correct ? kCorrect : kWrong;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            correct ? 'Correct! 🎉' : 'Not quite',
-            style: TextStyle(color: color, fontWeight: FontWeight.w800),
-          ),
-          if (quiz.explanation.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            InlineCodeText(quiz.explanation, accent: color),
+    final color = correct ? AppTheme.correct : AppTheme.wrong;
+    return FadeSlideIn(
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              correct ? 'Correct!' : 'Not quite',
+              style: TextStyle(color: color, fontWeight: FontWeight.w700),
+            ),
+            if (quiz.explanation.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              InlineCodeText(quiz.explanation),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -244,10 +241,9 @@ class QuizFeedback extends StatelessWidget {
 
 /// Plain text where `backtick` spans are shown as code.
 class InlineCodeText extends StatelessWidget {
-  const InlineCodeText(this.text, {super.key, required this.accent});
+  const InlineCodeText(this.text, {super.key});
 
   final String text;
-  final Color accent;
 
   @override
   Widget build(BuildContext context) {
@@ -264,7 +260,7 @@ class InlineCodeText extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: AppTheme.mono,
                       fontSize: 14.5,
-                      backgroundColor: accent.withValues(alpha: 0.12),
+                      backgroundColor: scheme.surfaceContainer,
                     ),
                   )
                 : TextSpan(text: parts[i]),

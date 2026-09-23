@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../data/models.dart';
 import '../state/app_state.dart';
@@ -21,6 +22,11 @@ class _LessonScreenState extends State<LessonScreen> {
   final _progress = ValueNotifier<double>(0);
   final _showTitle = ValueNotifier<bool>(false);
   late AppState _state;
+
+  /// The rendered Markdown, reused across rebuilds (answering a quiz or
+  /// toggling a bookmark must not re-parse and re-highlight the lesson).
+  Widget? _content;
+  double? _contentScale;
 
   Lesson get lesson => widget.lesson;
 
@@ -51,9 +57,10 @@ class _LessonScreenState extends State<LessonScreen> {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
+          duration: const Duration(seconds: 3),
           content: const Text('Resumed where you left off'),
           action: SnackBarAction(
-            label: 'START OVER',
+            label: 'From start',
             onPressed: () => _scroll.animateTo(
               0,
               duration: const Duration(milliseconds: 400),
@@ -81,51 +88,72 @@ class _LessonScreenState extends State<LessonScreen> {
     super.dispose();
   }
 
+  Widget _markdown(double scale) {
+    if (_content == null || _contentScale != scale) {
+      _contentScale = scale;
+      _content = MarkdownView(
+        data: lesson.markdown,
+        fontScale: scale,
+        quizzes: lesson.quizzes,
+      );
+    }
+    return _content!;
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = context.appState;
-    final book = context.book;
     final theme = Theme.of(context);
-    final muted = theme.colorScheme.onSurfaceVariant;
-    final color = lesson.section.color;
+    final scheme = theme.colorScheme;
     final bookmarked = state.isBookmarked(lesson);
+    final scale = state.fontScale;
 
     return LearningTimer(
       child: Scaffold(
         appBar: AppBar(
           title: ValueListenableBuilder(
             valueListenable: _showTitle,
-            builder: (_, show, _) => AnimatedOpacity(
+            builder: (_, show, child) => AnimatedOpacity(
               opacity: show ? 1 : 0,
               duration: const Duration(milliseconds: 200),
-              child: Text(lesson.title),
+              child: child,
             ),
+            child: Text(lesson.title),
           ),
           actions: [
             IconButton(
               tooltip: 'Text size',
-              icon: const Icon(Icons.format_size_rounded),
+              icon: const Icon(Icons.text_fields_rounded),
               onPressed: () => showSettingsSheet(context),
             ),
             IconButton(
               tooltip: bookmarked ? 'Remove bookmark' : 'Bookmark',
-              icon: Icon(
-                bookmarked
-                    ? Icons.bookmark_rounded
-                    : Icons.bookmark_add_outlined,
-                color: bookmarked ? color : null,
+              icon: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                transitionBuilder: (child, a) =>
+                    ScaleTransition(scale: a, child: child),
+                child: Icon(
+                  bookmarked
+                      ? Icons.bookmark_rounded
+                      : Icons.bookmark_border_rounded,
+                  key: ValueKey(bookmarked),
+                  color: bookmarked ? scheme.primary : null,
+                ),
               ),
-              onPressed: () => state.toggleBookmark(lesson),
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                state.toggleBookmark(lesson);
+              },
             ),
+            const SizedBox(width: 4),
           ],
           bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(3),
+            preferredSize: const Size.fromHeight(2),
             child: ValueListenableBuilder(
               valueListenable: _progress,
               builder: (_, value, _) => LinearProgressIndicator(
                 value: value,
-                minHeight: 3,
-                color: color,
+                minHeight: 2,
                 backgroundColor: Colors.transparent,
                 borderRadius: BorderRadius.zero,
               ),
@@ -137,87 +165,48 @@ class _LessonScreenState extends State<LessonScreen> {
             controller: _scroll,
             padding: EdgeInsets.fromLTRB(
               20,
-              8,
+              12,
               20,
               32 + MediaQuery.paddingOf(context).bottom,
             ),
             children: [
-              Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 12,
-                runSpacing: 8,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
+                  Text(
+                    '${lesson.section.title} · Lesson ${lesson.number} · '
+                    '${lesson.minutes} min read',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      color: scheme.primary,
                     ),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(20),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    lesson.title,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontSize: 27 * scale,
+                      height: 1.25,
                     ),
-                    child: Text(
-                      '${lesson.section.title.toUpperCase()} · LESSON ${lesson.number}',
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.8,
+                  ),
+                  if (lesson.summary.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      lesson.summary,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                        fontSize: 16.5 * scale,
+                        height: 1.5,
                       ),
                     ),
-                  ),
-                  _Meta(Icons.schedule_rounded, '${lesson.minutes} min read'),
-                  if (lesson.quizzes.isNotEmpty)
-                    _Meta(
-                      Icons.quiz_outlined,
-                      '${lesson.quizzes.length} questions',
-                    ),
+                  ],
+                  const SizedBox(height: 20),
+                  const Divider(),
+                  const SizedBox(height: 8),
                 ],
               ),
-              const SizedBox(height: 14),
-              Text(
-                lesson.title,
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontSize: 30 * state.fontScale,
-                  height: 1.2,
-                ),
-              ),
-              if (lesson.summary.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Text(
-                  lesson.summary,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w400,
-                    color: muted,
-                    height: 1.45,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 8),
-              Divider(height: 32, color: theme.colorScheme.outlineVariant),
-              MarkdownView(
-                data: lesson.markdown,
-                accent: color,
-                fontScale: state.fontScale,
-                quizzes: lesson.quizzes,
-              ),
+              _markdown(scale),
               const SizedBox(height: 32),
-              _CompleteButton(lesson: lesson),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: _NavCard(
-                      lesson: book.previousOf(lesson),
-                      isNext: false,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _NavCard(lesson: book.nextOf(lesson), isNext: true),
-                  ),
-                ],
-              ),
+              _LessonFooter(lesson: lesson),
             ],
           ),
         ),
@@ -226,162 +215,96 @@ class _LessonScreenState extends State<LessonScreen> {
   }
 }
 
-class _Meta extends StatelessWidget {
-  const _Meta(this.icon, this.text);
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final muted = theme.colorScheme.onSurfaceVariant;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 15, color: muted),
-        const SizedBox(width: 4),
-        Text(text, style: theme.textTheme.labelMedium?.copyWith(color: muted)),
-      ],
-    );
-  }
-}
-
-class _CompleteButton extends StatelessWidget {
-  const _CompleteButton({required this.lesson});
+/// One clear action at the end: complete the lesson, then go to the next.
+class _LessonFooter extends StatelessWidget {
+  const _LessonFooter({required this.lesson});
 
   final Lesson lesson;
 
   @override
   Widget build(BuildContext context) {
     final state = context.appState;
-    final done = state.isCompleted(lesson);
-    final color = lesson.section.color;
-
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 250),
-      child: done
-          ? OutlinedButton.icon(
-              key: const ValueKey('done'),
-              onPressed: () => state.setCompleted(lesson, false),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(56),
-                foregroundColor: color,
-                side: BorderSide(color: color.withValues(alpha: 0.5)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-              icon: const Icon(Icons.check_circle_rounded),
-              label: const Text(
-                'Completed',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-            )
-          : FilledButton.icon(
-              key: const ValueKey('todo'),
-              onPressed: () {
-                state.setCompleted(lesson, true);
-                final next = context.book.nextOf(lesson);
-                ScaffoldMessenger.of(context)
-                  ..hideCurrentSnackBar()
-                  ..showSnackBar(
-                    SnackBar(
-                      content: const Text(
-                        'Lesson completed · +${AppState.xpPerLesson} XP 🎉',
-                      ),
-                      action: next == null
-                          ? null
-                          : SnackBarAction(
-                              label: 'NEXT',
-                              onPressed: () =>
-                                  openLesson(context, next, replace: true),
-                            ),
-                    ),
-                  );
-              },
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(56),
-                backgroundColor: color,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-              icon: const Icon(Icons.task_alt_rounded),
-              label: const Text(
-                'Mark as complete',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-            ),
-    );
-  }
-}
-
-class _NavCard extends StatelessWidget {
-  const _NavCard({required this.lesson, required this.isNext});
-
-  final Lesson? lesson;
-  final bool isNext;
-
-  @override
-  Widget build(BuildContext context) {
-    final lesson = this.lesson;
-    if (lesson == null) return const SizedBox.shrink();
     final theme = Theme.of(context);
-    final align = isNext ? CrossAxisAlignment.end : CrossAxisAlignment.start;
+    final done = state.isCompleted(lesson);
+    final next = context.book.nextOf(lesson);
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => openLesson(context, lesson, replace: true),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: align,
+    final Widget child;
+    if (!done) {
+      child = SizedBox(
+        key: const ValueKey('todo'),
+        width: double.infinity,
+        child: FilledButton.icon(
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            state.setCompleted(lesson, true);
+          },
+          icon: const Icon(Icons.check_rounded),
+          label: const Text('Mark as complete'),
+        ),
+      );
+    } else {
+      child = Column(
+        key: const ValueKey('done'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
             children: [
-              Row(
-                mainAxisAlignment: isNext
-                    ? MainAxisAlignment.end
-                    : MainAxisAlignment.start,
-                children: [
-                  if (!isNext)
-                    Icon(
-                      Icons.arrow_back_rounded,
-                      size: 16,
-                      color: lesson.section.color,
-                    ),
-                  const SizedBox(width: 4),
-                  Text(
-                    isNext ? 'Next' : 'Previous',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: lesson.section.color,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  if (isNext)
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 16,
-                      color: lesson.section.color,
-                    ),
-                ],
+              Icon(
+                Icons.check_circle_rounded,
+                size: 20,
+                color: theme.colorScheme.primary,
               ),
-              const SizedBox(height: 6),
-              Text(
-                lesson.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                textAlign: isNext ? TextAlign.end : TextAlign.start,
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('Completed', style: theme.textTheme.titleSmall),
+              ),
+              TextButton(
+                onPressed: () => state.setCompleted(lesson, false),
+                child: const Text('Undo'),
               ),
             ],
           ),
+          const SizedBox(height: 8),
+          if (next != null)
+            FilledButton(
+              onPressed: () => openLesson(context, next, replace: true),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      'Next: ${next.title}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward_rounded, size: 20),
+                ],
+              ),
+            )
+          else
+            OutlinedButton(
+              onPressed: () => Navigator.of(context).maybePop(),
+              child: const Text('Back to lessons'),
+            ),
+        ],
+      );
+    }
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 260),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: SizeTransition(
+          sizeFactor: animation,
+          alignment: Alignment.topCenter,
+          child: child,
         ),
       ),
+      child: child,
     );
   }
 }

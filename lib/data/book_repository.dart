@@ -26,28 +26,38 @@ class BookRepository {
       await bundle.loadString('$_root/manifest.json'),
     ) as Map<String, dynamic>;
 
-    final sections = <Section>[];
-    for (final s in manifest['sections'] as List) {
-      final lessons = await Future.wait([
-        for (final l in s['lessons'] as List) _loadLesson(bundle, l as Map),
-      ]);
-      sections.add(
-        Section(
-          id: s['id'] as String,
-          title: s['title'] as String,
-          subtitle: s['subtitle'] as String? ?? '',
-          icon: _icons[s['icon']] ?? Icons.menu_book_rounded,
-          color: _parseColor(s['color'] as String? ?? '#00ADD8'),
-          lessons: lessons,
-        ),
-      );
-    }
+    // Every section and lesson file is read in parallel.
+    final sections = await Future.wait([
+      for (final s in manifest['sections'] as List)
+        _loadSection(bundle, s as Map),
+    ]);
     return Book(sections);
   }
 
-  static Future<Lesson> _loadLesson(AssetBundle bundle, Map json) async {
+  static Future<Section> _loadSection(AssetBundle bundle, Map s) async {
+    final lessons = await Future.wait([
+      for (final l in s['lessons'] as List) _loadLesson(bundle, l as Map),
+    ]);
+    return Section(
+      id: s['id'] as String,
+      title: s['title'] as String,
+      subtitle: s['subtitle'] as String? ?? '',
+      icon: _icons[s['icon']] ?? Icons.menu_book_rounded,
+      color: _parseColor(s['color'] as String? ?? '#00ADD8'),
+      lessons: [...lessons.nonNulls],
+    );
+  }
+
+  /// A missing or unreadable file skips that lesson instead of the whole book.
+  static Future<Lesson?> _loadLesson(AssetBundle bundle, Map json) async {
     final file = json['file'] as String;
-    final raw = await bundle.loadString('$_root/$file');
+    final String raw;
+    try {
+      raw = await bundle.loadString('$_root/$file');
+    } catch (e) {
+      debugPrint('Skipping lesson $file: $e');
+      return null;
+    }
     final (heading, body) = _splitTitle(raw);
     return Lesson(
       id: file.split('/').last.replaceAll('.md', ''),
@@ -68,5 +78,5 @@ class BookRepository {
   }
 
   static Color _parseColor(String hex) =>
-      Color(int.parse(hex.replaceFirst('#', 'FF'), radix: 16));
+      Color(int.tryParse(hex.replaceFirst('#', 'FF'), radix: 16) ?? 0xFF00ADD8);
 }

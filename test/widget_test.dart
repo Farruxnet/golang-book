@@ -27,6 +27,20 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  test('corrupted saved data falls back to defaults', () async {
+    SharedPreferences.setMockInitialValues({
+      'theme_mode': 42,
+      'quiz_answers': '{"a": "oops", "b": 1}',
+      'activity': 'not json',
+      'font_scale': 9.0,
+    });
+    final s = AppState(await SharedPreferences.getInstance());
+    expect(s.themeMode, ThemeMode.system);
+    expect(s.fontScale, 1.4);
+    expect(s.activeDays, 0);
+    expect(s.bestStreak, 0);
+  });
+
   test('quiz blocks are parsed', () {
     final q = Quiz.tryParse('Pick one\n- a\n+ `b`\n> because')!;
     expect(q.question, 'Pick one');
@@ -45,7 +59,7 @@ void main() {
       'Practice',
     ]);
     expect(book.allQuizzes, isNotEmpty);
-    await tester.scrollUntilVisible(find.text('Basic'), 300);
+    expect(find.text('Start here'), findsOneWidget);
 
     await tester.ensureVisible(find.text('Introduction to Go').last);
     await tester.pumpAndSettle();
@@ -67,7 +81,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(option.first);
     await tester.pumpAndSettle();
-    expect(find.text('Correct! 🎉'), findsOneWidget);
+    expect(find.text('Correct!'), findsOneWidget);
     expect(state.xp, AppState.xpPerQuiz);
 
     await tester.scrollUntilVisible(
@@ -77,9 +91,17 @@ void main() {
     );
     await tester.tap(find.text('Mark as complete'));
     await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('Completed'), findsOneWidget);
+    expect(find.textContaining('Next: '), findsOneWidget);
     expect(state.xp, AppState.xpPerQuiz + AppState.xpPerLesson);
     expect(state.currentStreak, 1);
+
+    // Back home, the continue card points at the next lesson.
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.text('Continue reading'), -300);
+    expect(find.text('Continue reading'), findsOneWidget);
   });
 
   testWidgets('practice and progress tabs render', (tester) async {
@@ -87,9 +109,9 @@ void main() {
 
     await tester.tap(find.text('Practice').last);
     await tester.pumpAndSettle();
-    expect(find.text('Quiz by topic'), findsOneWidget);
+    expect(find.text('By topic'), findsOneWidget);
 
-    await tester.tap(find.text('Start'));
+    await tester.tap(find.text('Quick quiz'));
     await tester.pumpAndSettle();
     expect(find.text('Check'), findsOneWidget);
     await tester.tap(find.byIcon(Icons.close_rounded));
@@ -97,7 +119,9 @@ void main() {
 
     await tester.tap(find.text('Progress').last);
     await tester.pumpAndSettle();
-    expect(find.text('Activity'), findsOneWidget);
-    expect(find.text('Daily goal'), findsWidgets);
+    expect(find.text('Daily goal'), findsOneWidget);
+    await tester.tap(find.text('15 min'));
+    await tester.pump();
+    expect(state.dailyGoal, 15);
   });
 }

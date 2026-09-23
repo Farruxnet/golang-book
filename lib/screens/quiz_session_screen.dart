@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../data/models.dart';
 import '../state/app_state.dart';
+import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/learning_timer.dart';
 import '../widgets/markdown_view.dart';
@@ -12,6 +14,7 @@ void openQuizSession(
   required String title,
   required List<Quiz> quizzes,
 }) {
+  if (quizzes.isEmpty) return;
   Navigator.of(context).push(
     MaterialPageRoute<void>(
       builder: (_) => QuizSessionScreen(title: title, quizzes: quizzes),
@@ -39,23 +42,13 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
   int? _selected;
   bool _checked = false;
   int _correct = 0;
-  late int _startXp;
-  bool _started = false;
 
   Quiz get _quiz => widget.quizzes[_index];
   bool get _finished => _index >= widget.quizzes.length;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_started) {
-      _startXp = context.appState.xp;
-      _started = true;
-    }
-  }
-
   void _check() {
     final correct = context.appState.answer(_quiz, _selected!);
+    correct ? HapticFeedback.lightImpact() : HapticFeedback.mediumImpact();
     setState(() {
       _checked = true;
       if (correct) _correct++;
@@ -84,32 +77,36 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
           leading: IconButton(
             tooltip: 'Close',
             icon: const Icon(Icons.close_rounded),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.maybePop(context),
           ),
           title: _finished
               ? Text(widget.title)
               : Row(
                   children: [
                     Expanded(
-                      child: TweenAnimationBuilder<double>(
-                        tween: Tween(
-                          end: (_index + (_checked ? 1 : 0)) / total,
-                        ),
-                        duration: const Duration(milliseconds: 300),
-                        builder: (_, v, _) => LinearProgressIndicator(
-                          value: v,
-                          minHeight: 10,
-                          color: kCorrect,
-                        ),
+                      child: ProgressLine(
+                        value: (_index + (_checked ? 1 : 0)) / total,
                       ),
                     ),
                     const SizedBox(width: 14),
-                    Text('${_index + 1}/$total'),
+                    Text('${_index + 1} / $total'),
                   ],
                 ),
         ),
         body: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 250),
+          duration: const Duration(milliseconds: 280),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (child, animation) => FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween(
+                begin: const Offset(0.06, 0),
+                end: Offset.zero,
+              ).animate(animation),
+              child: child,
+            ),
+          ),
           child: _finished ? _results(context) : _question(context),
         ),
       ),
@@ -119,7 +116,6 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
   Widget _question(BuildContext context) {
     final theme = Theme.of(context);
     final quiz = _quiz;
-    final accent = quiz.lesson.section.color;
     final correct = _selected == quiz.answer;
 
     return Column(
@@ -127,21 +123,17 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
       children: [
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
             children: [
               Text(
-                '${quiz.lesson.section.title} · ${quiz.lesson.title}'
-                    .toUpperCase(),
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: accent,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1,
+                quiz.lesson.title,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: theme.colorScheme.primary,
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               MarkdownView(
                 data: quiz.question,
-                accent: accent,
                 fontScale: context.appState.fontScale * 1.05,
               ),
               const SizedBox(height: 16),
@@ -149,7 +141,6 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
                 QuizOption(
                   index: i,
                   text: quiz.options[i],
-                  accent: accent,
                   status: !_checked
                       ? (i == _selected
                             ? OptionStatus.selected
@@ -172,32 +163,21 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
           top: false,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-            child: FilledButton(
-              onPressed: _selected == null
-                  ? null
-                  : _checked
-                  ? _next
-                  : _check,
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(56),
-                backgroundColor: _checked
-                    ? (correct ? kCorrect : kWrong)
-                    : accent,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: _selected == null
+                    ? null
+                    : _checked
+                    ? _next
+                    : _check,
+                child: Text(
+                  !_checked
+                      ? 'Check'
+                      : _index == widget.quizzes.length - 1
+                      ? 'See results'
+                      : 'Continue',
                 ),
-                textStyle: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              child: Text(
-                !_checked
-                    ? 'Check'
-                    : _index == widget.quizzes.length - 1
-                    ? 'See results'
-                    : 'Continue',
               ),
             ),
           ),
@@ -210,13 +190,13 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     final theme = Theme.of(context);
     final total = widget.quizzes.length;
     final ratio = _correct / total;
-    final earned = context.appState.xp - _startXp;
-    final (emoji, headline) = switch (ratio) {
-      1 => ('🏆', 'Perfect score!'),
-      >= 0.7 => ('🎉', 'Great job!'),
-      >= 0.4 => ('💪', 'Good effort'),
-      _ => ('📚', 'Keep practicing'),
+    final headline = switch (ratio) {
+      1 => 'Perfect score!',
+      >= 0.7 => 'Great job!',
+      >= 0.4 => 'Good effort',
+      _ => 'Keep practicing',
     };
+    final color = ratio >= 0.7 ? AppTheme.correct : AppTheme.streak;
 
     return SafeArea(
       key: const ValueKey('results'),
@@ -225,71 +205,48 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
         child: Column(
           children: [
             const Spacer(),
-            Text(emoji, style: const TextStyle(fontSize: 56)),
-            const SizedBox(height: 12),
-            Text(headline, style: theme.textTheme.headlineSmall),
-            const SizedBox(height: 24),
-            RingProgress(
-              value: ratio,
-              color: ratio >= 0.7 ? kCorrect : const Color(0xFFFF8A00),
-              size: 140,
-              stroke: 12,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '$_correct/$total',
-                    style: theme.textTheme.headlineMedium,
-                  ),
-                  Text(
-                    'correct',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: ratio),
+              duration: const Duration(milliseconds: 700),
+              curve: Curves.easeOutCubic,
+              builder: (_, v, _) => SizedBox.square(
+                dimension: 132,
+                child: CircularProgressIndicator(
+                  value: v,
+                  strokeWidth: 10,
+                  strokeCap: StrokeCap.round,
+                  color: color,
+                  backgroundColor: color.withValues(alpha: 0.14),
+                ),
               ),
             ),
             const SizedBox(height: 24),
-            if (earned > 0)
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '+$earned XP earned',
-                  style: const TextStyle(
-                    color: Color(0xFF8B5CF6),
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
+            Text(
+              '$_correct of $total correct',
+              style: theme.textTheme.titleLarge,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              headline,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
+            ),
             const Spacer(),
-            FilledButton(
-              onPressed: () => Navigator.pop(context),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(56),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.maybePop(context),
+                child: const Text('Done'),
               ),
-              child: const Text('Done'),
             ),
             const SizedBox(height: 10),
-            OutlinedButton(
-              onPressed: _restart,
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(56),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: _restart,
+                child: const Text('Try again'),
               ),
-              child: const Text('Try again'),
             ),
           ],
         ),

@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../state/app_state.dart';
+import '../theme.dart';
 import '../widgets/common.dart';
-import '../widgets/quiz_card.dart';
 import 'bookmarks_screen.dart';
 import 'settings_sheet.dart';
-
-const _purple = Color(0xFF8B5CF6);
-const _orange = Color(0xFFFF8A00);
 
 class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
@@ -21,233 +18,152 @@ class ProgressScreen extends StatelessWidget {
     final accuracy = answered == 0
         ? '–'
         : '${(state.correctIn(book.allQuizzes) / answered * 100).round()}%';
+    final streak = state.currentStreak;
 
-    return SafeArea(
-      bottom: false,
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Text('Progress', style: theme.textTheme.headlineSmall),
-          ),
-          const SizedBox(height: 16),
-          const _LevelCard(),
-          const SizedBox(height: 12),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 2.1,
-            children: [
-              StatTile(
-                leading: const _StatIcon(
-                  Icons.local_fire_department_rounded,
-                  _orange,
+    return EntranceScope(
+      child: SafeArea(
+        bottom: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          children: [
+            const FadeSlideIn(child: PageTitle('Progress')),
+            const SizedBox(height: 8),
+            FadeSlideIn(
+              index: 1,
+              child: AppCard(
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                child: IntrinsicHeight(
+                  child: Row(
+                    children: [
+                      _Stat(
+                        value: '$streak',
+                        label: streak == 1 ? 'day streak' : 'days streak',
+                        color: streak > 0 ? AppTheme.streak : null,
+                      ),
+                      const VerticalDivider(width: 1),
+                      _Stat(
+                        value:
+                            '${state.completedIn(book.allLessons)}/${book.allLessons.length}',
+                        label: 'lessons',
+                      ),
+                      const VerticalDivider(width: 1),
+                      _Stat(value: accuracy, label: 'quiz accuracy'),
+                    ],
+                  ),
                 ),
-                title:
-                    '${state.currentStreak} ${state.currentStreak == 1 ? 'day' : 'days'}',
-                subtitle: 'Streak · best ${state.bestStreak}',
               ),
-              StatTile(
-                leading: const _StatIcon(
-                  Icons.menu_book_rounded,
-                  Color(0xFF00ADD8),
-                ),
-                title:
-                    '${state.completedIn(book.allLessons)}/${book.allLessons.length}',
-                subtitle: 'Lessons done',
-              ),
-              StatTile(
-                leading: const _StatIcon(Icons.check_circle_rounded, kCorrect),
-                title: accuracy,
-                subtitle: 'Quiz accuracy',
-              ),
-              StatTile(
-                leading: const _StatIcon(Icons.timer_rounded, _purple),
-                title: '${state.totalMinutes} min',
-                subtitle: 'Time learning',
-              ),
-            ],
-          ),
-          const SectionHeader('Activity', trailing: 'Last 12 weeks'),
-          const _Heatmap(),
-          const SectionHeader('Daily goal'),
-          const _GoalPicker(),
-          const SectionHeader('Sections'),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            ),
+            const FadeSlideIn(index: 2, child: _DailyGoal()),
+            FadeSlideIn(
+              index: 3,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  for (final s in book.sections)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        children: [
-                          SectionBadge(section: s, size: 36),
-                          const SizedBox(width: 12),
-                          Expanded(
+                  const SectionHeader('Sections'),
+                  AppCard(
+                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+                    child: Column(
+                      children: [
+                        for (final s in book.sections)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10),
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 Row(
                                   children: [
                                     Expanded(
                                       child: Text(
                                         s.title,
-                                        style: theme.textTheme.titleSmall
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w700,
-                                            ),
+                                        style: theme.textTheme.bodyLarge,
                                       ),
                                     ),
                                     Text(
-                                      '${state.completedIn(s.lessons)}/${s.lessons.length}',
-                                      style: theme.textTheme.labelMedium,
+                                      '${state.completedIn(s.lessons)} / ${s.lessons.length}',
+                                      style: theme.textTheme.labelMedium
+                                          ?.copyWith(
+                                            color: theme
+                                                .colorScheme
+                                                .onSurfaceVariant,
+                                          ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 6),
-                                LinearProgressIndicator(
+                                const SizedBox(height: 8),
+                                ProgressLine(
                                   value: state.progressOf(s.lessons),
-                                  color: s.color,
                                 ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
+                      ],
                     ),
+                  ),
                 ],
               ),
             ),
-          ),
-          const SectionHeader('Settings'),
-          Card(
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.bookmarks_outlined),
-                  title: const Text('Bookmarks'),
-                  trailing: Text('${state.bookmarks.length}'),
-                  onTap: () => Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const BookmarksScreen(),
+            FadeSlideIn(
+              index: 4,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SectionHeader('Settings'),
+                  AppCard(
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.bookmark_border_rounded),
+                          title: const Text('Bookmarks'),
+                          trailing: Text('${state.bookmarks.length}'),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const BookmarksScreen(),
+                            ),
+                          ),
+                        ),
+                        const Divider(indent: 56),
+                        ListTile(
+                          leading: const Icon(Icons.tune_rounded),
+                          title: const Text('Theme & text size'),
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () => showSettingsSheet(context),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                const Divider(height: 1, indent: 56),
-                ListTile(
-                  leading: const Icon(Icons.palette_outlined),
-                  title: const Text('Theme & text size'),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () => showSettingsSheet(context),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StatIcon extends StatelessWidget {
-  const _StatIcon(this.icon, this.color);
-
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Icon(icon, color: color, size: 22),
-    );
-  }
-}
-
-class _LevelCard extends StatelessWidget {
-  const _LevelCard();
-
-  @override
-  Widget build(BuildContext context) {
-    final state = context.appState;
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [_purple, Color(0xFF3B2A8C)],
+          ],
         ),
       ),
-      child: Row(
+    );
+  }
+}
+
+class _Stat extends StatelessWidget {
+  const _Stat({required this.value, required this.label, this.color});
+
+  final String value;
+  final String label;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Expanded(
+      child: Column(
         children: [
-          RingProgress(
-            value: state.levelProgress,
-            color: Colors.white,
-            size: 72,
-            stroke: 7,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'LVL',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.75),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                Text(
-                  '${state.level}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    height: 1,
-                  ),
-                ),
-              ],
-            ),
+          Text(
+            value,
+            style: theme.textTheme.titleLarge?.copyWith(color: color),
           ),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${state.xp} XP',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${state.xpToNextLevel} XP to level ${state.level + 1}',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.8)),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '+${AppState.xpPerLesson} per lesson · +${AppState.xpPerQuiz} per correct answer',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 2),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -256,188 +172,52 @@ class _LevelCard extends StatelessWidget {
   }
 }
 
-/// GitHub-style grid: one column per week, Monday at the top.
-class _Heatmap extends StatelessWidget {
-  const _Heatmap();
-
-  static const _weeks = 12;
-  static const _gap = 4.0;
+class _DailyGoal extends StatelessWidget {
+  const _DailyGoal();
 
   @override
   Widget build(BuildContext context) {
     final state = context.appState;
     final theme = Theme.of(context);
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final start = today.subtract(
-      Duration(days: (today.weekday - 1) + 7 * (_weeks - 1)),
-    );
-    final goal = state.dailyGoal * 60;
-    const color = kCorrect;
+    final reached = state.todayGoalProgress >= 1;
 
-    Color cellColor(DateTime d) {
-      if (d.isAfter(today)) return Colors.transparent;
-      if (!state.isActiveOn(d)) return theme.colorScheme.outlineVariant;
-      final ratio = (state.secondsOn(d) / goal).clamp(0.0, 1.0);
-      return color.withValues(alpha: 0.3 + 0.7 * ratio);
-    }
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            LayoutBuilder(
-              builder: (context, box) {
-                const labelWidth = 22.0;
-                final cell =
-                    (box.maxWidth - labelWidth - _gap * (_weeks - 1)) / _weeks;
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: labelWidth,
-                      child: Column(
-                        children: [
-                          for (final (i, l)
-                              in 'M T W T F S S'.split(' ').indexed)
-                            SizedBox(
-                              height: cell + (i < 6 ? _gap : 0),
-                              child: Text(
-                                i.isEven ? l : '',
-                                style: theme.textTheme.labelSmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SectionHeader('Daily goal'),
+        AppCard(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                reached
+                    ? 'Goal reached today. Nice!'
+                    : '${state.todayMinutes} of ${state.dailyGoal} min today',
+                style: theme.textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 10),
+              ProgressLine(
+                value: state.todayGoalProgress,
+                color: AppTheme.correct,
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final m in AppState.dailyGoalOptions)
+                    ChoiceChip(
+                      label: Text('$m min'),
+                      selected: state.dailyGoal == m,
+                      onSelected: (_) => state.dailyGoal = m,
                     ),
-                    for (var w = 0; w < _weeks; w++) ...[
-                      Column(
-                        children: [
-                          for (var d = 0; d < 7; d++) ...[
-                            Tooltip(
-                              message: _label(
-                                start.add(Duration(days: w * 7 + d)),
-                                state,
-                              ),
-                              child: Container(
-                                width: cell,
-                                height: cell,
-                                decoration: BoxDecoration(
-                                  color: cellColor(
-                                    start.add(Duration(days: w * 7 + d)),
-                                  ),
-                                  borderRadius: BorderRadius.circular(4),
-                                  border:
-                                      start.add(Duration(days: w * 7 + d)) ==
-                                          today
-                                      ? Border.all(
-                                          color: theme.colorScheme.onSurface,
-                                          width: 1.5,
-                                        )
-                                      : null,
-                                ),
-                              ),
-                            ),
-                            if (d < 6) const SizedBox(height: _gap),
-                          ],
-                        ],
-                      ),
-                      if (w < _weeks - 1) const SizedBox(width: _gap),
-                    ],
-                  ],
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text('Less', style: theme.textTheme.labelSmall),
-                const SizedBox(width: 6),
-                for (final a in [0.0, 0.3, 0.65, 1.0])
-                  Container(
-                    width: 12,
-                    height: 12,
-                    margin: const EdgeInsets.only(right: 3),
-                    decoration: BoxDecoration(
-                      color: a == 0
-                          ? theme.colorScheme.outlineVariant
-                          : color.withValues(alpha: a),
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                  ),
-                const SizedBox(width: 3),
-                Text('More', style: theme.textTheme.labelSmall),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
-    );
-  }
-
-  static String _label(DateTime d, AppState state) {
-    final m = state.secondsOn(d) ~/ 60;
-    return '${d.day}.${d.month.toString().padLeft(2, '0')} · $m min';
-  }
-}
-
-class _GoalPicker extends StatelessWidget {
-  const _GoalPicker();
-
-  @override
-  Widget build(BuildContext context) {
-    final state = context.appState;
-    final theme = Theme.of(context);
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                RingProgress(
-                  value: state.todayGoalProgress,
-                  color: kCorrect,
-                  child: const Icon(
-                    Icons.flag_rounded,
-                    size: 18,
-                    color: kCorrect,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    state.todayGoalProgress >= 1
-                        ? 'Goal reached today — nice! 🎯'
-                        : '${state.todayMinutes} of ${state.dailyGoal} min today',
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final m in AppState.dailyGoalOptions)
-                  ChoiceChip(
-                    label: Text('$m min'),
-                    selected: state.dailyGoal == m,
-                    onSelected: (_) => state.dailyGoal = m,
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 }

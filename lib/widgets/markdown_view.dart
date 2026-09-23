@@ -13,17 +13,34 @@ class MarkdownView extends StatelessWidget {
   const MarkdownView({
     super.key,
     required this.data,
-    required this.accent,
     this.fontScale = 1,
     this.quizzes = const [],
   });
 
   final String data;
-  final Color accent;
   final double fontScale;
 
   /// Quizzes of the lesson, matched to ```` ```quiz ```` blocks by content.
   final List<Quiz> quizzes;
+
+  static Future<void> _openLink(String? href) async {
+    final uri = href == null ? null : Uri.tryParse(href);
+    if (uri == null || !uri.hasScheme) return;
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      debugPrint('Could not open $uri: $e');
+    }
+  }
+
+  static Widget _image(Uri uri, String? title, String? alt) {
+    Widget fallback(BuildContext _, Object _, StackTrace? _) =>
+        const SizedBox.shrink();
+    final image = uri.hasScheme
+        ? Image.network(uri.toString(), errorBuilder: fallback)
+        : Image.asset('assets/content/${uri.path}', errorBuilder: fallback);
+    return ClipRRect(borderRadius: BorderRadius.circular(12), child: image);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,76 +48,66 @@ class MarkdownView extends StatelessWidget {
       data: data,
       styleSheet: _styleSheet(Theme.of(context)),
       builders: {'pre': _CodeBlockBuilder(fontScale, quizzes)},
-      onTapLink: (text, href, title) {
-        final uri = href == null ? null : Uri.tryParse(href);
-        if (uri != null && uri.hasScheme) {
-          launchUrl(uri, mode: LaunchMode.externalApplication);
-        }
-      },
-      imageBuilder: (uri, title, alt) {
-        final image = uri.hasScheme
-            ? Image.network(uri.toString())
-            : Image.asset('assets/content/${uri.path}');
-        return ClipRRect(borderRadius: BorderRadius.circular(16), child: image);
-      },
+      onTapLink: (text, href, title) => _openLink(href),
+      imageBuilder: _image,
     );
   }
 
   MarkdownStyleSheet _styleSheet(ThemeData theme) {
     final scheme = theme.colorScheme;
+    final accent = scheme.primary;
     final s = fontScale;
     final body = TextStyle(
       fontSize: 16.5 * s,
       height: 1.7,
-      color: scheme.onSurface.withValues(alpha: 0.88),
+      color: scheme.onSurface.withValues(alpha: 0.9),
     );
     TextStyle heading(double size) => TextStyle(
       fontSize: size * s,
       height: 1.3,
-      fontWeight: FontWeight.w800,
-      letterSpacing: -0.3,
+      fontWeight: FontWeight.w700,
+      letterSpacing: -0.2,
       color: scheme.onSurface,
     );
 
     return MarkdownStyleSheet.fromTheme(theme).copyWith(
       p: body,
       pPadding: const EdgeInsets.only(bottom: 4),
-      h1: heading(26),
+      h1: heading(24),
       h1Padding: const EdgeInsets.only(top: 20, bottom: 4),
-      h2: heading(22),
+      h2: heading(21),
       h2Padding: const EdgeInsets.only(top: 22, bottom: 2),
-      h3: heading(18.5),
+      h3: heading(18),
       h3Padding: const EdgeInsets.only(top: 16),
       h4: heading(16.5),
       strong: const TextStyle(fontWeight: FontWeight.w700),
       em: const TextStyle(fontStyle: FontStyle.italic),
       a: TextStyle(
         color: accent,
-        fontWeight: FontWeight.w600,
         decoration: TextDecoration.underline,
         decorationColor: accent.withValues(alpha: 0.4),
       ),
       code: TextStyle(
         fontFamily: AppTheme.mono,
         fontSize: 14.5 * s,
-        color: Color.lerp(accent, scheme.onSurface, 0.35),
-        backgroundColor: accent.withValues(alpha: 0.12),
+        color: scheme.onSurface,
+        backgroundColor: scheme.surfaceContainer,
       ),
-      listBullet: body.copyWith(color: accent, fontWeight: FontWeight.w800),
-      listIndent: 24,
+      listBullet: body.copyWith(color: scheme.onSurfaceVariant),
+      listIndent: 22,
       blockSpacing: 14,
-      blockquote: body.copyWith(color: scheme.onSurface),
+      blockquote: body,
       blockquotePadding: const EdgeInsets.fromLTRB(16, 12, 14, 12),
       blockquoteDecoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
-        border: Border(left: BorderSide(color: accent, width: 4)),
+        color: accent.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(12),
+        border: Border(left: BorderSide(color: accent, width: 3)),
       ),
-      tableHead: body.copyWith(fontWeight: FontWeight.w700),
+      tableHead: body.copyWith(fontWeight: FontWeight.w600),
       tableBody: body.copyWith(fontSize: 15 * s),
       tableBorder: TableBorder.all(
         color: scheme.outlineVariant,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
       ),
       tableHeadAlign: TextAlign.left,
       tableCellsPadding: const EdgeInsets.symmetric(
@@ -109,7 +116,7 @@ class MarkdownView extends StatelessWidget {
       ),
       tableCellsDecoration: BoxDecoration(color: scheme.surfaceContainerLow),
       horizontalRuleDecoration: BoxDecoration(
-        border: Border(top: BorderSide(color: scheme.outlineVariant, width: 1)),
+        border: Border(top: BorderSide(color: scheme.outlineVariant)),
       ),
     );
   }

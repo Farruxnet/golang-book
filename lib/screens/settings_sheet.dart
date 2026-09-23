@@ -5,7 +5,6 @@ import '../state/app_state.dart';
 Future<void> showSettingsSheet(BuildContext context) {
   return showModalBottomSheet<void>(
     context: context,
-    showDragHandle: true,
     useSafeArea: true,
     builder: (_) => const _SettingsSheet(),
   );
@@ -28,7 +27,7 @@ class _SettingsSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Reading settings', style: theme.textTheme.titleLarge),
+          Text('Appearance', style: theme.textTheme.titleLarge),
           const SizedBox(height: 20),
           Text('Theme', style: theme.textTheme.labelLarge),
           const SizedBox(height: 8),
@@ -83,6 +82,8 @@ class _SettingsSheet extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
+          const Divider(),
+          const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
             child: TextButton.icon(
@@ -90,14 +91,15 @@ class _SettingsSheet extends StatelessWidget {
                 foregroundColor: theme.colorScheme.error,
               ),
               icon: const Icon(Icons.restart_alt_rounded),
-              label: const Text('Reset reading progress'),
+              label: const Text('Reset progress'),
               onPressed: () async {
                 final ok = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
                     title: const Text('Reset progress?'),
                     content: const Text(
-                      'All lessons will be marked as not completed.',
+                      'Completed lessons, quiz answers and streaks will be '
+                      'cleared. Bookmarks and settings are kept.',
                     ),
                     actions: [
                       TextButton(

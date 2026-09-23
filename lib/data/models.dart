@@ -62,11 +62,16 @@ class Lesson {
   int get number => index + 1;
 
   /// Estimated reading time at ~180 words per minute (code reads slower).
-  int get minutes {
+  /// Computed once: it is shown in every list row.
+  late final int minutes = () {
     final prose = markdown.replaceAll(Quiz.blockPattern, '');
     final words = RegExp(r'\S+').allMatches(prose).length;
     return (words / 180).ceil().clamp(1, 999);
-  }
+  }();
+
+  /// Markdown without syntax characters, lowercased lazily for search.
+  late final String plainText = markdown.replaceAll(RegExp(r'[#*`>\[\]_]'), '');
+  late final String plainTextLower = plainText.toLowerCase();
 }
 
 class Book {
@@ -95,11 +100,6 @@ class Book {
   }
 
   Lesson? lessonByKey(String? key) => key == null ? null : _byKey[key];
-
-  Lesson? previousOf(Lesson lesson) {
-    final i = allLessons.indexOf(lesson);
-    return i > 0 ? allLessons[i - 1] : null;
-  }
 
   Lesson? nextOf(Lesson lesson) {
     final i = allLessons.indexOf(lesson);

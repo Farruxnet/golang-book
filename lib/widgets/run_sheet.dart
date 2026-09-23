@@ -10,6 +10,7 @@ Future<void> showRunSheet(BuildContext context, String code) {
     isScrollControlled: true,
     useSafeArea: true,
     backgroundColor: const Color(0xFF0D1117),
+    showDragHandle: false,
     builder: (_) => _RunSheet(code: code),
   );
 }

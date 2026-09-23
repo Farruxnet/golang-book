@@ -9,14 +9,16 @@ import '../data/models.dart';
 /// Reader state persisted on device: progress, gamification and preferences.
 class AppState extends ChangeNotifier {
   AppState(this._prefs)
-    : _completed = (_prefs.getStringList(_kCompleted) ?? []).toSet(),
-      _bookmarks = (_prefs.getStringList(_kBookmarks) ?? []).toSet(),
-      _rewarded = (_prefs.getStringList(_kRewarded) ?? []).toSet(),
-      _lastLessonKey = _prefs.getString(_kLastLesson),
-      _themeMode = ThemeMode.values[_prefs.getInt(_kTheme) ?? 0],
-      _fontScale = _prefs.getDouble(_kFontScale) ?? 1.0,
-      _xp = _prefs.getInt(_kXp) ?? 0,
-      _dailyGoal = _prefs.getInt(_kDailyGoal) ?? 10,
+    : _completed = _stringSet(_prefs, _kCompleted),
+      _bookmarks = _stringSet(_prefs, _kBookmarks),
+      _rewarded = _stringSet(_prefs, _kRewarded),
+      _lastLessonKey = _safe(() => _prefs.getString(_kLastLesson), null),
+      themeModeListenable = ValueNotifier(_readThemeMode(_prefs)),
+      _fontScale =
+          _safe(() => _prefs.getDouble(_kFontScale), null)?.clamp(0.85, 1.4) ??
+          1.0,
+      _xp = _safe(() => _prefs.getInt(_kXp), null) ?? 0,
+      _dailyGoal = _safe(() => _prefs.getInt(_kDailyGoal), null) ?? 10,
       _answers = _readMap<int>(_prefs, _kAnswers),
       _activity = _readMap<int>(_prefs, _kActivity),
       _scroll = _readMap<num>(_prefs, _kScroll);
@@ -45,7 +47,6 @@ class AppState extends ChangeNotifier {
   /// Lesson keys and quiz ids that already granted XP (no farming by toggling).
   final Set<String> _rewarded;
   String? _lastLessonKey;
-  ThemeMode _themeMode;
   double _fontScale;
   int _xp;
   int _dailyGoal;
@@ -60,14 +61,41 @@ class AppState extends ChangeNotifier {
   /// Lesson key → last scroll offset, to resume reading where you left off.
   final Map<String, num> _scroll;
 
+  /// Reads a JSON map, dropping entries of the wrong type. Converted eagerly:
+  /// a lazy `cast` would throw later, far from here, on corrupted data.
   static Map<String, T> _readMap<T>(SharedPreferences p, String key) {
     final raw = p.getString(key);
     if (raw == null) return {};
     try {
-      return (jsonDecode(raw) as Map<String, dynamic>).cast<String, T>();
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) return {};
+      return {
+        for (final e in decoded.entries)
+          if (e.key is String && e.value is T) e.key as String: e.value as T,
+      };
     } catch (_) {
       return {};
     }
+  }
+
+  /// Stored values are ours, but a value of the wrong type (e.g. after an
+  /// app update) must fall back to a default instead of crashing on launch.
+  static T _safe<T>(T Function() read, T fallback) {
+    try {
+      return read();
+    } catch (_) {
+      return fallback;
+    }
+  }
+
+  static Set<String> _stringSet(SharedPreferences p, String key) =>
+      _safe(() => p.getStringList(key)?.toSet(), null) ?? {};
+
+  static ThemeMode _readThemeMode(SharedPreferences p) {
+    final i = _safe(() => p.getInt(_kTheme), null) ?? 0;
+    return i >= 0 && i < ThemeMode.values.length
+        ? ThemeMode.values[i]
+        : ThemeMode.system;
   }
 
   void _writeMap(String key, Map<String, Object> map) =>
@@ -223,7 +251,8 @@ class AppState extends ChangeNotifier {
   }
 
   int get bestStreak {
-    final days = _activity.keys.map(DateTime.parse).toList()..sort();
+    final days = _activity.keys.map(DateTime.tryParse).nonNulls.toList()
+      ..sort();
     var best = 0, run = 0;
     DateTime? prev;
     for (final d in days) {
@@ -236,11 +265,15 @@ class AppState extends ChangeNotifier {
 
   // ---- Preferences --------------------------------------------------------------
 
-  ThemeMode get themeMode => _themeMode;
+  /// Separate from [notifyListeners] so only [MaterialApp] listens to it:
+  /// progress changes must not rebuild the whole app.
+  final ValueNotifier<ThemeMode> themeModeListenable;
+
+  ThemeMode get themeMode => themeModeListenable.value;
   double get fontScale => _fontScale;
 
   set themeMode(ThemeMode mode) {
-    _themeMode = mode;
+    themeModeListenable.value = mode;
     _prefs.setInt(_kTheme, mode.index);
     notifyListeners();
   }

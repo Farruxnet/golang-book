@@ -19,11 +19,9 @@ class BookmarksScreen extends StatelessWidget {
               title: 'No bookmarks yet',
               message: 'Tap the bookmark icon in a lesson to save it here.',
             )
-          : ListView.builder(
-              padding: const EdgeInsets.fromLTRB(8, 8, 8, 32),
-              itemCount: lessons.length,
-              itemBuilder: (context, i) =>
-                  LessonTile(lesson: lessons[i], showSection: true),
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              children: [LessonGroup(lessons: lessons, showSection: true)],
             ),
     );
   }

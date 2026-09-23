@@ -32,14 +32,15 @@ class _SearchScreenState extends State<SearchScreen> {
         byTitle.add((l, null));
         continue;
       }
-      final text = l.markdown.replaceAll(RegExp(r'[#*`>\[\]_]'), '');
-      final i = text.toLowerCase().indexOf(q);
+      final i = l.plainTextLower.indexOf(q);
       if (i >= 0) {
+        final text = l.plainText;
         final start = (i - 40).clamp(0, text.length);
         final end = (i + q.length + 60).clamp(0, text.length);
         final snippet = text
             .substring(start, end)
-            .replaceAll(RegExp(r'\s+'), ' ');
+            .replaceAll(RegExp(r'\s+'), ' ')
+            .trim();
         byBody.add((l, '${start > 0 ? '…' : ''}$snippet…'));
       }
     }
@@ -60,7 +61,7 @@ class _SearchScreenState extends State<SearchScreen> {
           textInputAction: TextInputAction.search,
           onChanged: (v) => setState(() => _query = v),
           decoration: InputDecoration(
-            hintText: 'Search lessons, e.g. "goroutine"',
+            hintText: 'Search lessons',
             border: InputBorder.none,
             suffixIcon: _query.isEmpty
                 ? null
@@ -89,14 +90,15 @@ class _SearchScreenState extends State<SearchScreen> {
               title: 'No results',
               message: 'Try a different keyword.',
             )
-          : ListView.builder(
-              padding: const EdgeInsets.fromLTRB(8, 8, 8, 32),
-              itemCount: results.length,
-              itemBuilder: (context, i) => LessonTile(
-                lesson: results[i].$1,
-                subtitle: results[i].$2,
-                showSection: true,
-              ),
+          : ListView(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              children: [
+                LessonGroup(
+                  lessons: [for (final r in results) r.$1],
+                  subtitles: [for (final r in results) r.$2],
+                  showSection: true,
+                ),
+              ],
             ),
     );
   }

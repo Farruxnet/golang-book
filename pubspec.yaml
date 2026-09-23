@@ -37,6 +37,7 @@ dependencies:
   flutter_markdown_plus: ^1.0.12
   markdown: ^7.3.1
   flutter_highlight: ^0.7.0
+  highlight: ^0.7.0
   shared_preferences: ^2.5.5
   url_launcher: ^6.3.2
   http: ^1.6.0

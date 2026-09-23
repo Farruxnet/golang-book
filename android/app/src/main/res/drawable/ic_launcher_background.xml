@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Go-blue diagonal gradient behind the adaptive launcher icon. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient
+        android:angle="315"
+        android:startColor="#00ADD8"
+        android:endColor="#0076A0"
+        android:type="linear" />
+</shape>

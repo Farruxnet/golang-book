@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches the Flutter scaffold background, so launch has no color flash. -->
+    <color name="splash_background">#F7F8FA</color>
+</resources>
