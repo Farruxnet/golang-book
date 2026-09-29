@@ -75,7 +75,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            tooltip: 'Close',
+            tooltip: context.s.close,
             icon: const Icon(Icons.close_rounded),
             onPressed: () => Navigator.maybePop(context),
           ),
@@ -173,10 +173,10 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
                     : _check,
                 child: Text(
                   !_checked
-                      ? 'Check'
+                      ? context.s.check
                       : _index == widget.quizzes.length - 1
-                      ? 'See results'
-                      : 'Continue',
+                      ? context.s.seeResults
+                      : context.s.next,
                 ),
               ),
             ),
@@ -191,10 +191,10 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
     final total = widget.quizzes.length;
     final ratio = _correct / total;
     final headline = switch (ratio) {
-      1 => 'Perfect score!',
-      >= 0.7 => 'Great job!',
-      >= 0.4 => 'Good effort',
-      _ => 'Keep practicing',
+      1 => context.s.perfect,
+      >= 0.7 => context.s.great,
+      >= 0.4 => context.s.goodEffort,
+      _ => context.s.keepPracticing,
     };
     final color = ratio >= 0.7 ? AppTheme.correct : AppTheme.streak;
 
@@ -222,7 +222,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              '$_correct of $total correct',
+              context.s.correctOf(_correct, total),
               style: theme.textTheme.titleLarge,
             ),
             const SizedBox(height: 6),
@@ -237,7 +237,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
               width: double.infinity,
               child: FilledButton(
                 onPressed: () => Navigator.maybePop(context),
-                child: const Text('Done'),
+                child: Text(context.s.done),
               ),
             ),
             const SizedBox(height: 10),
@@ -245,7 +245,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: _restart,
-                child: const Text('Try again'),
+                child: Text(context.s.tryAgain),
               ),
             ),
           ],

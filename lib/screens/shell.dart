@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../state/app_state.dart';
 import '../widgets/haptics.dart';
 import 'config_screen.dart';
 import 'home_screen.dart';
@@ -69,26 +70,26 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
         bottomNavigationBar: NavigationBar(
           selectedIndex: _index,
           onDestinationSelected: _select,
-          destinations: const [
+          destinations: [
             NavigationDestination(
               icon: Icon(Icons.menu_book_outlined),
               selectedIcon: Icon(Icons.menu_book_rounded),
-              label: 'Learn',
+              label: context.s.navLearn,
             ),
             NavigationDestination(
               icon: Icon(Icons.quiz_outlined),
               selectedIcon: Icon(Icons.quiz_rounded),
-              label: 'Practice',
+              label: context.s.navPractice,
             ),
             NavigationDestination(
               icon: Icon(Icons.insights_outlined),
               selectedIcon: Icon(Icons.insights_rounded),
-              label: 'Progress',
+              label: context.s.navProgress,
             ),
             NavigationDestination(
               icon: Icon(Icons.tune_outlined),
               selectedIcon: Icon(Icons.tune_rounded),
-              label: 'Config',
+              label: context.s.navConfig,
             ),
           ],
         ),

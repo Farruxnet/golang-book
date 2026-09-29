@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_highlight/themes/atom-one-dark.dart';
 import 'package:highlight/highlight.dart' show Node, highlight;
 
+import '../state/app_state.dart';
 import '../theme.dart';
 import 'haptics.dart';
 
@@ -145,7 +146,7 @@ class _CopyButtonState extends State<_CopyButton> {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      tooltip: _copied ? 'Copied' : 'Copy',
+      tooltip: _copied ? context.s.copied : context.s.copy,
       onPressed: _copy,
       visualDensity: VisualDensity.compact,
       icon: AnimatedSwitcher(

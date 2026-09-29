@@ -25,18 +25,19 @@ class HomeScreen extends StatelessWidget {
               sliver: SliverToBoxAdapter(
                 child: FadeSlideIn(
                   child: PageTitle(
-                    'Learn Go',
-                    subtitle:
-                        '${state.completedIn(book.allLessons)} of '
-                        '${book.allLessons.length} lessons done',
+                    context.s.learnGo,
+                    subtitle: context.s.lessonsDone(
+                      state.completedIn(book.allLessons),
+                      book.allLessons.length,
+                    ),
                     actions: [
                       IconButton(
-                        tooltip: 'Search',
+                        tooltip: context.s.search,
                         icon: const Icon(Icons.search_rounded),
                         onPressed: () => _push(context, const SearchScreen()),
                       ),
                       IconButton(
-                        tooltip: 'Bookmarks',
+                        tooltip: context.s.bookmarks,
                         icon: const Icon(Icons.bookmark_border_rounded),
                         onPressed: () =>
                             _push(context, const BookmarksScreen()),
@@ -109,7 +110,7 @@ class _ContinueCard extends StatelessWidget {
             const SizedBox(width: 14),
             Expanded(
               child: Text(
-                'You finished every lesson. Great work!',
+                context.s.finishedAll,
                 style: theme.textTheme.titleMedium,
               ),
             ),
@@ -130,7 +131,7 @@ class _ContinueCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  started ? 'Continue reading' : 'Start here',
+                  started ? context.s.continueReading : context.s.startHere,
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: scheme.primary,
                   ),
@@ -144,8 +145,11 @@ class _ContinueCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${next.section.title} · Lesson ${next.number} · '
-                  '${next.minutes} min',
+                  context.s.lessonMeta(
+                    next.section.title,
+                    next.number,
+                    next.minutes,
+                  ),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),

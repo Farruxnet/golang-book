@@ -20,6 +20,7 @@ class _SettingsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.appState;
     final theme = Theme.of(context);
+    final s = context.s;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
@@ -27,38 +28,38 @@ class _SettingsSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Appearance', style: theme.textTheme.titleLarge),
+          Text(s.appearance, style: theme.textTheme.titleLarge),
           const SizedBox(height: 20),
-          Text('Theme', style: theme.textTheme.labelLarge),
+          Text(s.theme, style: theme.textTheme.labelLarge),
           const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
             child: SegmentedButton<ThemeMode>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: ThemeMode.system,
-                  icon: Icon(Icons.brightness_auto_rounded),
-                  label: Text('System'),
+                  icon: const Icon(Icons.brightness_auto_rounded),
+                  label: Text(s.themeSystem),
                 ),
                 ButtonSegment(
                   value: ThemeMode.light,
-                  icon: Icon(Icons.light_mode_rounded),
-                  label: Text('Light'),
+                  icon: const Icon(Icons.light_mode_rounded),
+                  label: Text(s.themeLight),
                 ),
                 ButtonSegment(
                   value: ThemeMode.dark,
-                  icon: Icon(Icons.dark_mode_rounded),
-                  label: Text('Dark'),
+                  icon: const Icon(Icons.dark_mode_rounded),
+                  label: Text(s.themeDark),
                 ),
               ],
               selected: {state.themeMode},
-              onSelectionChanged: (s) => state.themeMode = s.first,
+              onSelectionChanged: (v) => state.themeMode = v.first,
             ),
           ),
           const SizedBox(height: 24),
           Row(
             children: [
-              Text('Text size', style: theme.textTheme.labelLarge),
+              Text(s.textSize, style: theme.textTheme.labelLarge),
               const Spacer(),
               Text(
                 '${(state.fontScale * 100).round()}%',
@@ -91,24 +92,21 @@ class _SettingsSheet extends StatelessWidget {
                 foregroundColor: theme.colorScheme.error,
               ),
               icon: const Icon(Icons.restart_alt_rounded),
-              label: const Text('Reset progress'),
+              label: Text(s.resetProgress),
               onPressed: () async {
                 final ok = await showDialog<bool>(
                   context: context,
                   builder: (ctx) => AlertDialog(
-                    title: const Text('Reset progress?'),
-                    content: const Text(
-                      'Completed lessons, quiz answers and streaks will be '
-                      'cleared. Bookmarks and settings are kept.',
-                    ),
+                    title: Text(s.resetProgressQ),
+                    content: Text(s.resetProgressBody),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(ctx, false),
-                        child: const Text('Cancel'),
+                        child: Text(s.cancel),
                       ),
                       FilledButton(
                         onPressed: () => Navigator.pop(ctx, true),
-                        child: const Text('Reset'),
+                        child: Text(s.reset),
                       ),
                     ],
                   ),

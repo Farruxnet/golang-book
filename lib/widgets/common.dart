@@ -197,7 +197,7 @@ class LessonTile extends StatelessWidget {
     final done = state.isCompleted(lesson);
     final meta = [
       if (showSection) lesson.section.title,
-      '${lesson.minutes} min',
+      context.s.minutes(lesson.minutes),
     ].join(' · ');
 
     return InkWell(

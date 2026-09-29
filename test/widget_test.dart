@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:golang_book/data/book_repository.dart';
 import 'package:golang_book/data/models.dart';
+import 'package:golang_book/l10n/strings.dart';
 import 'package:golang_book/main.dart';
 import 'package:golang_book/screens/lesson_screen.dart';
 import 'package:golang_book/state/app_state.dart';
@@ -170,5 +171,53 @@ void main() {
     expect(state.themeMode, ThemeMode.system);
     expect(state.accent, 0);
     expect(state.haptics, isTrue);
+  });
+
+  test('language is saved and unknown values fall back to system', () async {
+    state.language = 'uz';
+    final reloaded = AppState(await SharedPreferences.getInstance());
+    expect(reloaded.language, 'uz');
+    expect(reloaded.languageCode, 'uz');
+
+    SharedPreferences.setMockInitialValues({'language': 'xx'});
+    final bad = AppState(await SharedPreferences.getInstance());
+    expect(bad.language, 'system');
+    expect(S.codes, contains(bad.languageCode));
+  });
+
+  test('every language has its own texts', () {
+    final all = [for (final c in S.codes) S(c)];
+    for (final pick in <String Function(S)>[
+      (s) => s.navLearn,
+      (s) => s.markComplete,
+      (s) => s.resetProgressBody,
+      (s) => s.loadFailedBody,
+      (s) => s.sampleText,
+    ]) {
+      final texts = all.map(pick).toList();
+      expect(texts.every((t) => t.isNotEmpty), isTrue);
+      expect(texts.toSet().length, S.codes.length);
+    }
+    expect(S('uz').minutes(5), '5 daqiqa');
+    expect(S('en').minutes(5), '5 min');
+    expect(S('ru').minutes(5), '5 мин');
+  });
+
+  testWidgets('language can be switched in Config', (tester) async {
+    await pumpApp(tester);
+    expect(find.text('Learn'), findsWidgets);
+
+    await tester.tap(find.text('Config').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Русский'));
+    await tester.pumpAndSettle();
+    expect(state.languageCode, 'ru');
+    expect(find.text('Учёба'), findsWidgets);
+    expect(find.text('Learn'), findsNothing);
+
+    await tester.tap(find.text("O'zbekcha"));
+    await tester.pumpAndSettle();
+    expect(state.languageCode, 'uz');
+    expect(find.text("O'qish"), findsWidgets);
   });
 }

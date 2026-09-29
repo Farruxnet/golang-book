@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/strings.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
@@ -9,15 +10,13 @@ import '../widgets/markdown_view.dart';
 class ConfigScreen extends StatelessWidget {
   const ConfigScreen({super.key});
 
-  static const _sample =
-      'Go is **simple** and fast. Print a line with `fmt.Println("Salom")` '
-      'and run it with `go run main.go`.';
-
-  static const _lineHeightLabels = ['Compact', 'Normal', 'Relaxed'];
+  static String _lineHeightLabel(S s, int i) =>
+      [s.spacingCompact, s.spacingNormal, s.spacingRelaxed][i];
 
   @override
   Widget build(BuildContext context) {
     final state = context.appState;
+    final s = context.s;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final range = AppState.fontScaleRange;
@@ -28,64 +27,42 @@ class ConfigScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           children: [
-            const FadeSlideIn(
-              child: PageTitle(
-                'Config',
-                subtitle: 'Make the book look and feel the way you like',
-              ),
+            FadeSlideIn(
+              child: PageTitle(s.configTitle, subtitle: s.configHeading),
             ),
             FadeSlideIn(
               index: 1,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SectionHeader('Appearance'),
+                  SectionHeader(s.language),
                   AppCard(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Theme', style: theme.textTheme.labelLarge),
-                        const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          child: SegmentedButton<ThemeMode>(
-                            segments: const [
-                              ButtonSegment(
-                                value: ThemeMode.system,
-                                icon: Icon(Icons.brightness_auto_rounded),
-                                label: Text('System'),
-                              ),
-                              ButtonSegment(
-                                value: ThemeMode.light,
-                                icon: Icon(Icons.light_mode_rounded),
-                                label: Text('Light'),
-                              ),
-                              ButtonSegment(
-                                value: ThemeMode.dark,
-                                icon: Icon(Icons.dark_mode_rounded),
-                                label: Text('Dark'),
-                              ),
-                            ],
-                            selected: {state.themeMode},
-                            onSelectionChanged: (s) =>
-                                state.themeMode = s.first,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text('Accent color', style: theme.textTheme.labelLarge),
-                        const SizedBox(height: 12),
                         Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
+                          spacing: 8,
+                          runSpacing: 8,
                           children: [
-                            for (var i = 0; i < AppTheme.accents.length; i++)
-                              _AccentDot(
-                                accent: AppTheme.accents[i],
-                                selected: state.accent == i,
-                                onTap: () => state.accent = i,
+                            for (final code in ['system', ...S.codes])
+                              ChoiceChip(
+                                label: Text(
+                                  code == 'system'
+                                      ? s.systemDefault
+                                      : S.nativeNames[code]!,
+                                ),
+                                selected: state.language == code,
+                                onSelected: (_) => state.language = code,
                               ),
                           ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          s.languageHint,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
@@ -98,7 +75,67 @@ class ConfigScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SectionHeader('Reading'),
+                  SectionHeader(s.appearance),
+                  AppCard(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(s.theme, style: theme.textTheme.labelLarge),
+                        const SizedBox(height: 8),
+                        SizedBox(
+                          width: double.infinity,
+                          child: SegmentedButton<ThemeMode>(
+                            segments: [
+                              ButtonSegment(
+                                value: ThemeMode.system,
+                                icon: const Icon(Icons.brightness_auto_rounded),
+                                label: Text(s.themeSystem),
+                              ),
+                              ButtonSegment(
+                                value: ThemeMode.light,
+                                icon: const Icon(Icons.light_mode_rounded),
+                                label: Text(s.themeLight),
+                              ),
+                              ButtonSegment(
+                                value: ThemeMode.dark,
+                                icon: const Icon(Icons.dark_mode_rounded),
+                                label: Text(s.themeDark),
+                              ),
+                            ],
+                            selected: {state.themeMode},
+                            onSelectionChanged: (v) =>
+                                state.themeMode = v.first,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(s.accentColor, style: theme.textTheme.labelLarge),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          children: [
+                            for (var i = 0; i < AppTheme.accents.length; i++)
+                              _AccentDot(
+                                accent: AppTheme.accents[i],
+                                name: s.accentName(i),
+                                selected: state.accent == i,
+                                onTap: () => state.accent = i,
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            FadeSlideIn(
+              index: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SectionHeader(s.reading),
                   AppCard(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -106,7 +143,7 @@ class ConfigScreen extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            Text('Text size', style: theme.textTheme.labelLarge),
+                            Text(s.textSize, style: theme.textTheme.labelLarge),
                             const Spacer(),
                             Text(
                               '${(state.fontScale * 100).round()}%',
@@ -133,7 +170,7 @@ class ConfigScreen extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 8),
-                        Text('Line spacing', style: theme.textTheme.labelLarge),
+                        Text(s.lineSpacing, style: theme.textTheme.labelLarge),
                         const SizedBox(height: 8),
                         SizedBox(
                           width: double.infinity,
@@ -145,12 +182,12 @@ class ConfigScreen extends StatelessWidget {
                                   i++)
                                 ButtonSegment(
                                   value: AppState.lineHeightOptions[i],
-                                  label: Text(_lineHeightLabels[i]),
+                                  label: Text(_lineHeightLabel(s, i)),
                                 ),
                             ],
                             selected: {state.lineHeight},
-                            onSelectionChanged: (s) =>
-                                state.lineHeight = s.first,
+                            onSelectionChanged: (v) =>
+                                state.lineHeight = v.first,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -162,7 +199,7 @@ class ConfigScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: MarkdownView(
-                            data: _sample,
+                            data: s.sampleText,
                             fontScale: state.fontScale,
                             lineHeight: state.lineHeight,
                           ),
@@ -174,18 +211,18 @@ class ConfigScreen extends StatelessWidget {
               ),
             ),
             FadeSlideIn(
-              index: 3,
+              index: 4,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SectionHeader('Learning'),
+                  SectionHeader(s.learning),
                   AppCard(
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Daily goal (minutes)',
+                          s.dailyGoalMinutes,
                           style: theme.textTheme.labelLarge,
                         ),
                         const SizedBox(height: 8),
@@ -198,8 +235,8 @@ class ConfigScreen extends StatelessWidget {
                                 ButtonSegment(value: m, label: Text('$m')),
                             ],
                             selected: {state.dailyGoal},
-                            onSelectionChanged: (s) =>
-                                state.dailyGoal = s.first,
+                            onSelectionChanged: (v) =>
+                                state.dailyGoal = v.first,
                           ),
                         ),
                       ],
@@ -209,8 +246,8 @@ class ConfigScreen extends StatelessWidget {
                   AppCard(
                     child: SwitchListTile(
                       secondary: const Icon(Icons.vibration_rounded),
-                      title: const Text('Haptic feedback'),
-                      subtitle: const Text('Vibrate on taps and quiz answers'),
+                      title: Text(s.haptics),
+                      subtitle: Text(s.hapticsHint),
                       value: state.haptics,
                       onChanged: (v) => state.haptics = v,
                     ),
@@ -219,25 +256,23 @@ class ConfigScreen extends StatelessWidget {
               ),
             ),
             FadeSlideIn(
-              index: 4,
+              index: 5,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SectionHeader('Data'),
+                  SectionHeader(s.data),
                   AppCard(
                     child: Column(
                       children: [
                         ListTile(
                           leading: const Icon(Icons.settings_backup_restore),
-                          title: const Text('Restore default settings'),
-                          subtitle: const Text('Progress is kept'),
+                          title: Text(s.restoreDefaults),
+                          subtitle: Text(s.progressKept),
                           onTap: () => _confirm(
                             context,
-                            title: 'Restore default settings?',
-                            message:
-                                'Theme, accent color, text size, line spacing, '
-                                'daily goal and haptics go back to defaults.',
-                            action: 'Restore',
+                            title: s.restoreDefaultsQ,
+                            message: s.restoreDefaultsBody,
+                            action: s.restore,
                             onConfirm: state.resetPreferences,
                           ),
                         ),
@@ -248,18 +283,15 @@ class ConfigScreen extends StatelessWidget {
                             color: scheme.error,
                           ),
                           title: Text(
-                            'Reset progress',
+                            s.resetProgress,
                             style: TextStyle(color: scheme.error),
                           ),
-                          subtitle: const Text('Lessons, quiz answers, streaks'),
+                          subtitle: Text(s.resetProgressHint),
                           onTap: () => _confirm(
                             context,
-                            title: 'Reset progress?',
-                            message:
-                                'Completed lessons, quiz answers and streaks '
-                                'will be cleared. Bookmarks and settings are '
-                                'kept.',
-                            action: 'Reset',
+                            title: s.resetProgressQ,
+                            message: s.resetProgressBody,
+                            action: s.reset,
                             onConfirm: state.resetProgress,
                           ),
                         ),
@@ -290,7 +322,7 @@ class ConfigScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel'),
+            child: Text(context.s.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -306,11 +338,13 @@ class ConfigScreen extends StatelessWidget {
 class _AccentDot extends StatelessWidget {
   const _AccentDot({
     required this.accent,
+    required this.name,
     required this.selected,
     required this.onTap,
   });
 
   final AccentColor accent;
+  final String name;
   final bool selected;
   final VoidCallback onTap;
 
@@ -324,7 +358,7 @@ class _AccentDot extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      label: accent.name,
+      label: name,
       child: InkResponse(
         onTap: onTap,
         radius: 28,

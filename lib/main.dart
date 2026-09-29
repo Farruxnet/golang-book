@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'data/book_repository.dart';
 import 'data/models.dart';
+import 'l10n/strings.dart';
 import 'screens/shell.dart';
 import 'state/app_state.dart';
 import 'theme.dart';
@@ -83,6 +84,8 @@ class _LoadFailedApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The app state did not load, so the device language is all we have.
+    final s = S.device();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
@@ -96,20 +99,19 @@ class _LoadFailedApp extends StatelessWidget {
               children: [
                 const Icon(Icons.menu_book_outlined, size: 48),
                 const SizedBox(height: 16),
-                const Text(
-                  'Could not open the book',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                Text(
+                  s.loadFailedTitle,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Please restart the app. If this keeps happening, '
-                  'reinstall it.',
-                  textAlign: TextAlign.center,
-                ),
+                Text(s.loadFailedBody, textAlign: TextAlign.center),
                 const SizedBox(height: 24),
                 FilledButton(
                   onPressed: () => SystemNavigator.pop(),
-                  child: const Text('Close'),
+                  child: Text(s.close),
                 ),
               ],
             ),

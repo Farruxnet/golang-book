@@ -34,10 +34,10 @@ class PracticeScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           children: [
-            const FadeSlideIn(
+            FadeSlideIn(
               child: PageTitle(
-                'Practice',
-                subtitle: 'Short quizzes to check what you learned',
+                context.s.navPractice,
+                subtitle: context.s.practiceSubtitle,
               ),
             ),
             const SizedBox(height: 8),
@@ -46,11 +46,11 @@ class PracticeScreen extends StatelessWidget {
                 index: 1,
                 child: _ActionCard(
                   icon: Icons.shuffle_rounded,
-                  title: 'Quick quiz',
-                  subtitle: '$_mixedCount random questions',
+                  title: context.s.quickQuiz,
+                  subtitle: context.s.randomQuestions(_mixedCount),
                   onTap: () => openQuizSession(
                     context,
-                    title: 'Quick quiz',
+                    title: context.s.quickQuiz,
                     quizzes: _mixed(book, state),
                   ),
                 ),
@@ -64,15 +64,15 @@ class PracticeScreen extends StatelessWidget {
                       ? Icons.check_rounded
                       : Icons.today_rounded,
                   iconColor: state.isCorrect(daily) ? AppTheme.correct : null,
-                  title: 'Question of the day',
+                  title: context.s.questionOfDay,
                   subtitle: state.isCorrect(daily)
-                      ? 'Solved. See you tomorrow!'
-                      : 'One question, new every day',
+                      ? context.s.solvedTomorrow
+                      : context.s.oneQuestionDaily,
                   onTap: () {
                     if (!state.isCorrect(daily)) state.clearAnswers([daily]);
                     openQuizSession(
                       context,
-                      title: 'Question of the day',
+                      title: context.s.questionOfDay,
                       quizzes: [daily],
                     );
                   },
@@ -85,7 +85,7 @@ class PracticeScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SectionHeader('By topic'),
+                    SectionHeader(context.s.byTopic),
                     AppCard(
                       child: Column(
                         children: [
@@ -198,7 +198,7 @@ class _TopicRow extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    '$correct of $total correct',
+                    context.s.correctOf(correct, total),
                     style: theme.textTheme.bodySmall?.copyWith(color: muted),
                   ),
                 ],

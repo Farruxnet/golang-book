@@ -61,7 +61,7 @@ class _SearchScreenState extends State<SearchScreen> {
           textInputAction: TextInputAction.search,
           onChanged: (v) => setState(() => _query = v),
           decoration: InputDecoration(
-            hintText: 'Search lessons',
+            hintText: context.s.searchLessons,
             border: InputBorder.none,
             suffixIcon: _query.isEmpty
                 ? null
@@ -79,16 +79,16 @@ class _SearchScreenState extends State<SearchScreen> {
         ),
       ),
       body: _query.trim().isEmpty
-          ? const EmptyState(
+          ? EmptyState(
               icon: Icons.search_rounded,
-              title: 'Search the book',
-              message: 'Find any topic across all sections.',
+              title: context.s.searchTheBook,
+              message: context.s.findAnyTopic,
             )
           : results.isEmpty
-          ? const EmptyState(
+          ? EmptyState(
               icon: Icons.search_off_rounded,
-              title: 'No results',
-              message: 'Try a different keyword.',
+              title: context.s.noResults,
+              message: context.s.tryDifferent,
             )
           : ListView(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),

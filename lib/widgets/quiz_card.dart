@@ -38,7 +38,7 @@ class QuizCard extends StatelessWidget {
               Icon(Icons.help_outline_rounded, size: 18, color: scheme.primary),
               const SizedBox(width: 6),
               Text(
-                'Quick check',
+                context.s.quickCheck,
                 style: theme.textTheme.labelLarge?.copyWith(
                   color: scheme.primary,
                 ),
@@ -69,7 +69,7 @@ class QuizCard extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () => state.clearAnswers([quiz]),
-                  child: const Text('Try again'),
+                  child: Text(context.s.tryAgain),
                 ),
               ),
           ],
@@ -225,7 +225,7 @@ class QuizFeedback extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              correct ? 'Correct!' : 'Not quite',
+              correct ? context.s.correct : context.s.notQuite,
               style: TextStyle(color: color, fontWeight: FontWeight.w700),
             ),
             if (quiz.explanation.isNotEmpty) ...[

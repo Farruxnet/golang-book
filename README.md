@@ -16,7 +16,14 @@ progress tracking, streaks and XP on top.
 | **Learn** | Continue reading, daily goal & level, daily challenge, sections with their lessons |
 | **Practice** | Mixed quiz, daily challenge, quiz by topic, projects |
 | **Progress** | Level/XP, streak, stats, 12-week activity heatmap, daily goal, bookmarks |
-| **Config** | Theme (system/light/dark), accent color, text size, line spacing, daily goal, haptics, reset |
+| **Config** | Language (Uzbek/English/Russian), theme (system/light/dark), accent color, text size, line spacing, daily goal, haptics, reset |
+
+## Languages
+
+The app's own texts (menus, buttons, messages) come in Uzbek, English and Russian and are
+chosen in **Config → Language** (default: the device language, English if it isn't supported).
+All of them live in `lib/l10n/strings.dart`; add a language by adding its code to `S.codes` and a
+translation to every entry. Lesson content is not translated.
 
 ## Adding content
 

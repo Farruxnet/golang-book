@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/models.dart';
+import '../l10n/strings.dart';
 import '../theme.dart';
 import '../widgets/haptics.dart';
 
@@ -23,6 +24,7 @@ class AppState extends ChangeNotifier {
           ) ??
           1.0,
       accentListenable = ValueNotifier(_readAccent(_prefs)),
+      _language = _safe(() => _prefs.getString(_kLanguage), null) ?? 'system',
       _lineHeight = _readLineHeight(_prefs),
       _haptics = _safe(() => _prefs.getBool(_kHaptics), null) ?? true,
       _xp = _safe(() => _prefs.getInt(_kXp), null) ?? 0,
@@ -39,6 +41,7 @@ class AppState extends ChangeNotifier {
   static const _kLastLesson = 'last_lesson';
   static const _kTheme = 'theme_mode';
   static const _kFontScale = 'font_scale';
+  static const _kLanguage = 'language';
   static const _kAccent = 'accent';
   static const _kLineHeight = 'line_height';
   static const _kHaptics = 'haptics';
@@ -66,6 +69,7 @@ class AppState extends ChangeNotifier {
   String? _lastLessonKey;
   double _fontScale;
   double _lineHeight;
+  String _language;
   bool _haptics;
   int _xp;
   int _dailyGoal;
@@ -307,6 +311,18 @@ class AppState extends ChangeNotifier {
   double get lineHeight => _lineHeight;
   bool get haptics => _haptics;
 
+  /// Saved choice: `system` or one of [S.codes].
+  String get language => S.codes.contains(_language) ? _language : 'system';
+
+  /// The language the interface is actually shown in.
+  String get languageCode => S.resolve(_language);
+
+  set language(String value) {
+    _language = value;
+    _prefs.setString(_kLanguage, value);
+    notifyListeners();
+  }
+
   set accent(int index) {
     accentListenable.value = index;
     _prefs.setInt(_kAccent, index);
@@ -328,6 +344,7 @@ class AppState extends ChangeNotifier {
 
   /// Puts every preference back to its default. Progress is not touched.
   void resetPreferences() {
+    language = 'system';
     themeMode = ThemeMode.system;
     accent = 0;
     fontScale = 1.0;
@@ -391,5 +408,8 @@ class AppScope extends InheritedNotifier<AppState> {
 
 extension AppScopeX on BuildContext {
   AppState get appState => AppScope.stateOf(this);
+
+  /// Interface texts in the language chosen in Config.
+  S get s => S(AppScope.stateOf(this).languageCode);
   Book get book => AppScope.bookOf(this);
 }

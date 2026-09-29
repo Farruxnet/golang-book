@@ -59,9 +59,9 @@ class _LessonScreenState extends State<LessonScreen> {
       ..showSnackBar(
         SnackBar(
           duration: const Duration(seconds: 3),
-          content: const Text('Resumed where you left off'),
+          content: Text(context.s.resumed),
           action: SnackBarAction(
-            label: 'From start',
+            label: context.s.fromStart,
             onPressed: () => _scroll.animateTo(
               0,
               duration: const Duration(milliseconds: 400),
@@ -127,12 +127,12 @@ class _LessonScreenState extends State<LessonScreen> {
           ),
           actions: [
             IconButton(
-              tooltip: 'Text size',
+              tooltip: context.s.textSize,
               icon: const Icon(Icons.text_fields_rounded),
               onPressed: () => showSettingsSheet(context),
             ),
             IconButton(
-              tooltip: bookmarked ? 'Remove bookmark' : 'Bookmark',
+              tooltip: bookmarked ? context.s.removeBookmark : context.s.bookmark,
               icon: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 200),
                 transitionBuilder: (child, a) =>
@@ -179,8 +179,11 @@ class _LessonScreenState extends State<LessonScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${lesson.section.title} · Lesson ${lesson.number} · '
-                    '${lesson.minutes} min read',
+                    context.s.lessonMetaRead(
+                      lesson.section.title,
+                      lesson.number,
+                      lesson.minutes,
+                    ),
                     style: theme.textTheme.labelLarge?.copyWith(
                       color: scheme.primary,
                     ),
@@ -244,7 +247,7 @@ class _LessonFooter extends StatelessWidget {
             state.setCompleted(lesson, true);
           },
           icon: const Icon(Icons.check_rounded),
-          label: const Text('Mark as complete'),
+          label: Text(context.s.markComplete),
         ),
       );
     } else {
@@ -261,11 +264,14 @@ class _LessonFooter extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: Text('Completed', style: theme.textTheme.titleSmall),
+                child: Text(
+                  context.s.completed,
+                  style: theme.textTheme.titleSmall,
+                ),
               ),
               TextButton(
                 onPressed: () => state.setCompleted(lesson, false),
-                child: const Text('Undo'),
+                child: Text(context.s.undo),
               ),
             ],
           ),
@@ -278,7 +284,7 @@ class _LessonFooter extends StatelessWidget {
                 children: [
                   Flexible(
                     child: Text(
-                      'Next: ${next.title}',
+                      context.s.nextLesson(next.title),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -291,7 +297,7 @@ class _LessonFooter extends StatelessWidget {
           else
             OutlinedButton(
               onPressed: () => Navigator.of(context).maybePop(),
-              child: const Text('Back to lessons'),
+              child: Text(context.s.backToLessons),
             ),
         ],
       );

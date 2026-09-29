@@ -26,7 +26,7 @@ class ProgressScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           children: [
-            const FadeSlideIn(child: PageTitle('Progress')),
+            FadeSlideIn(child: PageTitle(context.s.navProgress)),
             const SizedBox(height: 8),
             FadeSlideIn(
               index: 1,
@@ -37,17 +37,17 @@ class ProgressScreen extends StatelessWidget {
                     children: [
                       _Stat(
                         value: '$streak',
-                        label: streak == 1 ? 'day streak' : 'days streak',
+                        label: context.s.dayStreak(streak),
                         color: streak > 0 ? AppTheme.streak : null,
                       ),
                       const VerticalDivider(width: 1),
                       _Stat(
                         value:
                             '${state.completedIn(book.allLessons)}/${book.allLessons.length}',
-                        label: 'lessons',
+                        label: context.s.lessons,
                       ),
                       const VerticalDivider(width: 1),
-                      _Stat(value: accuracy, label: 'quiz accuracy'),
+                      _Stat(value: accuracy, label: context.s.quizAccuracy),
                     ],
                   ),
                 ),
@@ -59,7 +59,7 @@ class ProgressScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SectionHeader('Sections'),
+                  SectionHeader(context.s.sections),
                   AppCard(
                     padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
                     child: Column(
@@ -107,13 +107,13 @@ class ProgressScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SectionHeader('Settings'),
+                  SectionHeader(context.s.settings),
                   AppCard(
                     child: Column(
                       children: [
                         ListTile(
                           leading: const Icon(Icons.bookmark_border_rounded),
-                          title: const Text('Bookmarks'),
+                          title: Text(context.s.bookmarks),
                           trailing: Text('${state.bookmarks.length}'),
                           onTap: () => Navigator.of(context).push(
                             MaterialPageRoute<void>(
@@ -124,8 +124,8 @@ class ProgressScreen extends StatelessWidget {
                         const Divider(indent: 56),
                         ListTile(
                           leading: const Icon(Icons.tune_rounded),
-                          title: const Text('Config'),
-                          subtitle: const Text('Theme, text size and more'),
+                          title: Text(context.s.navConfig),
+                          subtitle: Text(context.s.configSubtitle),
                           trailing: const Icon(Icons.chevron_right_rounded),
                           onTap: () => Shell.goTo(context, ShellTab.config),
                         ),
@@ -185,7 +185,7 @@ class _DailyGoal extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const SectionHeader('Daily goal'),
+        SectionHeader(context.s.dailyGoal),
         AppCard(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -193,8 +193,11 @@ class _DailyGoal extends StatelessWidget {
             children: [
               Text(
                 reached
-                    ? 'Goal reached today. Nice!'
-                    : '${state.todayMinutes} of ${state.dailyGoal} min today',
+                    ? context.s.goalReached
+                    : context.s.minutesToday(
+                        state.todayMinutes,
+                        state.dailyGoal,
+                      ),
                 style: theme.textTheme.bodyLarge,
               ),
               const SizedBox(height: 10),
@@ -209,7 +212,7 @@ class _DailyGoal extends StatelessWidget {
                 children: [
                   for (final m in AppState.dailyGoalOptions)
                     ChoiceChip(
-                      label: Text('$m min'),
+                      label: Text(context.s.minutes(m)),
                       selected: state.dailyGoal == m,
                       onSelected: (_) => state.dailyGoal = m,
                     ),
