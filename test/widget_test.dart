@@ -16,7 +16,8 @@ void main() {
   late AppState state;
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
+    // Most tests are about the app itself, not the first-launch flow.
+    SharedPreferences.setMockInitialValues({'onboarded': true});
     state = AppState(await SharedPreferences.getInstance());
   });
 
@@ -168,6 +169,7 @@ void main() {
     expect(state.haptics, isFalse);
 
     state.resetPreferences();
+    expect(state.language, 'en');
     expect(state.themeMode, ThemeMode.system);
     expect(state.accent, 0);
     expect(state.haptics, isTrue);
@@ -181,8 +183,8 @@ void main() {
 
     SharedPreferences.setMockInitialValues({'language': 'xx'});
     final bad = AppState(await SharedPreferences.getInstance());
-    expect(bad.language, 'system');
-    expect(S.codes, contains(bad.languageCode));
+    expect(bad.language, 'en');
+    expect(S.defaultCode, 'en');
   });
 
   test('every language has its own texts', () {
@@ -219,5 +221,50 @@ void main() {
     await tester.pumpAndSettle();
     expect(state.languageCode, 'uz');
     expect(find.text("O'qish"), findsWidgets);
+  });
+
+  testWidgets('first launch: pick a language, read the intro, start', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    state = AppState(await SharedPreferences.getInstance());
+    await pumpApp(tester);
+
+    expect(state.onboarded, isFalse);
+    expect(state.language, 'en');
+    expect(find.text('Choose your language'), findsOneWidget);
+
+    await tester.tap(find.text('Русский'));
+    await tester.pumpAndSettle();
+    expect(state.language, 'ru');
+    expect(find.text('Выберите язык'), findsOneWidget);
+
+    await tester.tap(find.text('Продолжить'));
+    await tester.pumpAndSettle();
+    expect(find.text('Изучайте Go шаг за шагом'), findsOneWidget);
+
+    await tester.tap(find.text('Далее'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Далее'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Начать'));
+    await tester.pumpAndSettle();
+
+    expect(state.onboarded, isTrue);
+    expect(find.text('Учёба'), findsWidgets);
+  });
+
+  testWidgets('the intro can be skipped', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    state = AppState(await SharedPreferences.getInstance());
+    await pumpApp(tester);
+
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Skip'));
+    await tester.pumpAndSettle();
+    expect(state.onboarded, isTrue);
+    expect(state.language, 'en');
+    expect(find.text('Start here'), findsOneWidget);
   });
 }

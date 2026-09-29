@@ -45,13 +45,9 @@ class ConfigScreen extends StatelessWidget {
                           spacing: 8,
                           runSpacing: 8,
                           children: [
-                            for (final code in ['system', ...S.codes])
+                            for (final code in S.codes)
                               ChoiceChip(
-                                label: Text(
-                                  code == 'system'
-                                      ? s.systemDefault
-                                      : S.nativeNames[code]!,
-                                ),
+                                label: Text(S.nativeNames[code]!),
                                 selected: state.language == code,
                                 onSelected: (_) => state.language = code,
                               ),

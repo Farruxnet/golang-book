@@ -8,18 +8,23 @@ import 'dart:ui';
 class S {
   const S(this.code);
 
-  /// The language of the device if the app has it, otherwise English.
-  factory S.device() => S(resolve('system'));
-
-  /// Language codes the app is translated into.
-  static const codes = ['uz', 'en', 'ru'];
-
-  /// Turns a saved preference (`system` or a code) into a supported code.
-  static String resolve(String preference) {
-    if (codes.contains(preference)) return preference;
+  /// The language of the device if the app has it, otherwise English. Only
+  /// for the startup failure screen, where no saved choice can be read.
+  factory S.device() {
     final device = PlatformDispatcher.instance.locale.languageCode;
-    return codes.contains(device) ? device : 'en';
+    return S(codes.contains(device) ? device : 'en');
   }
+
+  /// Language codes the app is translated into. English is the default.
+  static const codes = ['uz', 'en', 'ru'];
+  static const defaultCode = 'en';
+
+  /// The language named in English, shown under its own name.
+  static const englishNames = {
+    'uz': 'Uzbek',
+    'en': 'English',
+    'ru': 'Russian',
+  };
 
   /// Language names are written in their own language everywhere.
   static const nativeNames = {
@@ -223,8 +228,6 @@ class S {
     "Ilova tili. Darslar o'zgarmaydi.",
     'Язык приложения. Уроки не меняются.',
   );
-  String get systemDefault =>
-      _t('System default', 'Tizim tili', 'Язык системы');
   String get appearance => _t('Appearance', 'Ko‘rinish', 'Внешний вид');
   String get theme => _t('Theme', 'Mavzu', 'Тема');
   String get themeSystem => _t('System', 'Tizim', 'Система');
@@ -303,6 +306,59 @@ class S {
         'Xatcho‘plar va sozlamalar saqlanadi.',
     'Пройденные уроки, ответы на тесты и серии будут удалены. '
         'Закладки и настройки сохранятся.',
+  );
+
+  // ---- Welcome and intro ------------------------------------------------------
+
+  String get chooseLanguage =>
+      _t('Choose your language', 'Tilni tanlang', 'Выберите язык');
+  String get chooseLanguageHint => _t(
+    'You can change it later in Config.',
+    "Uni keyinroq Sozlamalarda o'zgartirish mumkin.",
+    'Позже его можно изменить в настройках.',
+  );
+  String get continueLabel => _t('Continue', 'Davom etish', 'Продолжить');
+  String get skip => _t('Skip', "O'tkazib yuborish", 'Пропустить');
+  String get nextStep => _t('Next', 'Keyingisi', 'Далее');
+  String get getStarted => _t('Get started', 'Boshlash', 'Начать');
+  String get introLearnTitle => _t(
+    'Learn Go step by step',
+    "Go'ni bosqichma-bosqich o'rganing",
+    'Изучайте Go шаг за шагом',
+  );
+  String get introLearnBody => _t(
+    'Short lessons with clear examples. The app remembers where you '
+        'stopped, so you can pick up right there.',
+    "Aniq misollar bilan qisqa darslar. Ilova qayerda to'xtaganingizni "
+        "eslab qoladi, shu joydan davom etasiz.",
+    'Короткие уроки с понятными примерами. Приложение запоминает, где вы '
+        'остановились, и вы продолжаете с того же места.',
+  );
+  String get introPracticeTitle => _t(
+    'Check yourself with quizzes',
+    "Testlar bilan o'zingizni sinang",
+    'Проверяйте себя тестами',
+  );
+  String get introPracticeBody => _t(
+    'Quick quizzes, a new question every day, XP and streaks keep you '
+        'moving.',
+    "Tezkor testlar, har kuni yangi savol, XP va ketma-ket kunlar sizni "
+        "harakatda ushlab turadi.",
+    'Быстрые тесты, новый вопрос каждый день, очки опыта и серии '
+        'помогают не сбиваться с ритма.',
+  );
+  String get introConfigTitle => _t(
+    'Make it yours',
+    "O'zingizga moslang",
+    'Настройте под себя',
+  );
+  String get introConfigBody => _t(
+    'Pick a theme and accent color, change the text size and set a daily '
+        'goal in Config.',
+    "Sozlamalarda mavzu va rangni tanlang, matn o'lchamini o'zgartiring va "
+        "kunlik maqsad belgilang.",
+    'В настройках выберите тему и цвет, измените размер текста и '
+        'поставьте дневную цель.',
   );
 
   // ---- Startup failure ------------------------------------------------------

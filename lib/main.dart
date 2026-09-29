@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'data/book_repository.dart';
 import 'data/models.dart';
 import 'l10n/strings.dart';
+import 'screens/onboarding_screen.dart';
 import 'screens/shell.dart';
 import 'state/app_state.dart';
 import 'theme.dart';
@@ -72,7 +73,16 @@ class GoBookApp extends StatelessWidget {
           darkTheme: AppTheme.build(state.accent, Brightness.dark),
           themeMode: state.themeMode,
           themeAnimationDuration: const Duration(milliseconds: 250),
-          home: const Shell(),
+          // Reads the state through the scope, so finishing the welcome flow
+          // swaps the screen without rebuilding MaterialApp.
+          home: Builder(
+            builder: (context) => AnimatedSwitcher(
+              duration: const Duration(milliseconds: 350),
+              child: context.appState.onboarded
+                  ? const Shell()
+                  : const OnboardingScreen(),
+            ),
+          ),
         ),
       ),
     );

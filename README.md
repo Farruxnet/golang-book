@@ -21,7 +21,8 @@ progress tracking, streaks and XP on top.
 ## Languages
 
 The app's own texts (menus, buttons, messages) come in Uzbek, English and Russian and are
-chosen in **Config → Language** (default: the device language, English if it isn't supported).
+chosen on first launch (the welcome screen is followed by a short intro) and later in
+**Config → Language**. English is the default.
 All of them live in `lib/l10n/strings.dart`; add a language by adding its code to `S.codes` and a
 translation to every entry. Lesson content is not translated.
 

@@ -24,9 +24,10 @@ class AppState extends ChangeNotifier {
           ) ??
           1.0,
       accentListenable = ValueNotifier(_readAccent(_prefs)),
-      _language = _safe(() => _prefs.getString(_kLanguage), null) ?? 'system',
+      _language = _safe(() => _prefs.getString(_kLanguage), null) ?? S.defaultCode,
       _lineHeight = _readLineHeight(_prefs),
       _haptics = _safe(() => _prefs.getBool(_kHaptics), null) ?? true,
+      _onboarded = _safe(() => _prefs.getBool(_kOnboarded), null) ?? false,
       _xp = _safe(() => _prefs.getInt(_kXp), null) ?? 0,
       _dailyGoal = _safe(() => _prefs.getInt(_kDailyGoal), null) ?? 10,
       _answers = _readMap<int>(_prefs, _kAnswers),
@@ -45,6 +46,7 @@ class AppState extends ChangeNotifier {
   static const _kAccent = 'accent';
   static const _kLineHeight = 'line_height';
   static const _kHaptics = 'haptics';
+  static const _kOnboarded = 'onboarded';
   static const _kXp = 'xp';
   static const _kDailyGoal = 'daily_goal';
   static const _kAnswers = 'quiz_answers';
@@ -71,6 +73,7 @@ class AppState extends ChangeNotifier {
   double _lineHeight;
   String _language;
   bool _haptics;
+  bool _onboarded;
   int _xp;
   int _dailyGoal;
 
@@ -311,11 +314,21 @@ class AppState extends ChangeNotifier {
   double get lineHeight => _lineHeight;
   bool get haptics => _haptics;
 
-  /// Saved choice: `system` or one of [S.codes].
-  String get language => S.codes.contains(_language) ? _language : 'system';
+  /// One of [S.codes]; English until the reader picks another one.
+  String get language =>
+      S.codes.contains(_language) ? _language : S.defaultCode;
 
-  /// The language the interface is actually shown in.
-  String get languageCode => S.resolve(_language);
+  /// The language the interface is shown in.
+  String get languageCode => language;
+
+  /// Whether the welcome flow (language and intro) has been completed.
+  bool get onboarded => _onboarded;
+
+  void completeOnboarding() {
+    _onboarded = true;
+    _prefs.setBool(_kOnboarded, true);
+    notifyListeners();
+  }
 
   set language(String value) {
     _language = value;
@@ -344,7 +357,7 @@ class AppState extends ChangeNotifier {
 
   /// Puts every preference back to its default. Progress is not touched.
   void resetPreferences() {
-    language = 'system';
+    language = S.defaultCode;
     themeMode = ThemeMode.system;
     accent = 0;
     fontScale = 1.0;
