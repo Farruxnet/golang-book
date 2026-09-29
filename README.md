@@ -3,6 +3,12 @@
 A Flutter app for learning Go. Lessons are Markdown files; the app adds quizzes,
 runnable code, progress tracking, streaks and XP on top.
 
+## Related repositories
+
+| Repository | Purpose |
+|------------|---------|
+| [Farruxnet/go-lang.uz](https://github.com/Farruxnet/go-lang.uz) | Source of the [go-lang.uz](https://go-lang.uz) website: Uzbek Go lessons (MkDocs Material, content in `docs/`). |
+
 ## App structure
 
 | Tab | What's there |
