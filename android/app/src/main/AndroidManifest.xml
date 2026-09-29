@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Running code samples on the Go Playground. -->
+    <!-- Lets url_launcher and lesson images reach the network. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="Go Book"

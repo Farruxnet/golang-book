@@ -68,7 +68,6 @@ void main() {
     await tester.tap(find.text('Introduction to Go').last);
     await tester.pumpAndSettle();
     expect(find.text('Your first program'), findsOneWidget);
-    expect(find.text('Run'), findsOneWidget);
 
     final list = find.byType(Scrollable).first;
     // Scope to the lesson: offstage tabs also contain quiz cards.

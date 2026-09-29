@@ -5,7 +5,6 @@ import 'package:highlight/highlight.dart' show Node, highlight;
 
 import '../theme.dart';
 import 'haptics.dart';
-import 'run_sheet.dart';
 
 /// Syntax-highlighted code block with a language label and copy button.
 /// Always dark, like an editor, in both app themes.
@@ -20,12 +19,6 @@ class CodeBlock extends StatefulWidget {
   final String code;
   final String language;
   final double fontScale;
-
-  /// Complete programs can be executed on the Go Playground.
-  bool get runnable =>
-      language == 'go' &&
-      code.contains('package main') &&
-      code.contains('func main()');
 
   @override
   State<CodeBlock> createState() => _CodeBlockState();
@@ -104,20 +97,6 @@ class _CodeBlockState extends State<CodeBlock> {
                     ),
                   ),
                   const Spacer(),
-                  if (widget.runnable)
-                    TextButton.icon(
-                      onPressed: () => showRunSheet(context, widget.code),
-                      style: TextButton.styleFrom(
-                        foregroundColor: const Color(0xFF3FB950),
-                        visualDensity: VisualDensity.compact,
-                        textStyle: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      icon: const Icon(Icons.play_arrow_rounded, size: 18),
-                      label: const Text('Run'),
-                    ),
                   _CopyButton(code: widget.code),
                 ],
               ),

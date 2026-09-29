@@ -1,7 +1,7 @@
 # Go Book
 
 A Flutter app for learning Go. Lessons are Markdown files; the app adds quizzes,
-runnable code, progress tracking, streaks and XP on top.
+progress tracking, streaks and XP on top.
 
 ## Related repositories
 
@@ -30,7 +30,6 @@ runnable code, progress tracking, streaks and XP on top.
 - The lesson title comes from the file's first `# Heading`, or from an optional `"title"` field.
 - Reading time is calculated automatically.
 - Name the language on code blocks (```` ```go ````) to get syntax highlighting.
-  Blocks containing `package main` and `func main()` get a **Run** button (Go Playground).
 - Images go in `assets/content/images/` and are referenced as `![alt](images/pic.png)`.
 - If you add a new folder, register it under `flutter/assets` in `pubspec.yaml`.
 
