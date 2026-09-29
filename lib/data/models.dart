@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// A top-level part of the book: Basic, Advanced, Practice.
+/// A top-level part of the book: Go asoslari, Advanced, Practice.
 class Section {
   Section({
     required this.id,

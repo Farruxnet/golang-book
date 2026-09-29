@@ -51,11 +51,10 @@ void main() {
     expect(Quiz.tryParse('No answer\n- a\n- b'), isNull);
   });
 
-  testWidgets('read a lesson, answer its quiz, complete it', (tester) async {
+  testWidgets('read a lesson and complete it', (tester) async {
     await pumpApp(tester);
 
     expect(book.sections.map((s) => s.title), [
-      'Basic',
       'Go asoslari (go-lang.uz)',
       'Advanced',
       'Practice',
@@ -63,28 +62,12 @@ void main() {
     expect(book.allQuizzes, isNotEmpty);
     expect(find.text('Start here'), findsOneWidget);
 
-    await tester.ensureVisible(find.text('Introduction to Go').last);
+    // The Start here card opens the first lesson of the book.
+    await tester.tap(find.text('Start here'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Introduction to Go').last);
-    await tester.pumpAndSettle();
-    expect(find.text('Your first program'), findsOneWidget);
+    expect(find.byType(LessonScreen), findsOneWidget);
 
     final list = find.byType(Scrollable).first;
-    // Scope to the lesson: offstage tabs also contain quiz cards.
-    final option = find.descendant(
-      of: find.byType(LessonScreen),
-      matching: find.byWidgetPredicate(
-        (w) => w is QuizOption && w.text == '`go run main.go`',
-      ),
-    );
-    await tester.scrollUntilVisible(option.first, 400, scrollable: list);
-    await tester.ensureVisible(option.first);
-    await tester.pumpAndSettle();
-    await tester.tap(option.first);
-    await tester.pumpAndSettle();
-    expect(find.text('Correct!'), findsOneWidget);
-    expect(state.xp, AppState.xpPerQuiz);
-
     await tester.scrollUntilVisible(
       find.text('Mark as complete'),
       400,
@@ -95,7 +78,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Completed'), findsOneWidget);
     expect(find.textContaining('Next: '), findsOneWidget);
-    expect(state.xp, AppState.xpPerQuiz + AppState.xpPerLesson);
+    expect(state.xp, AppState.xpPerLesson);
     expect(state.currentStreak, 1);
 
     // Back home, the continue card points at the next lesson.
@@ -103,6 +86,40 @@ void main() {
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.text('Continue reading'), -300);
     expect(find.text('Continue reading'), findsOneWidget);
+  });
+
+  testWidgets('answer a quiz inside a lesson', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.75;
+    addTearDown(tester.view.reset);
+    book = (await tester.runAsync(() => BookRepository.load(rootBundle)))!;
+    final lesson = book.allLessons.firstWhere((l) => l.title == 'Interfaces');
+    await tester.pumpWidget(
+      AppScope(
+        book: book,
+        state: state,
+        child: MaterialApp(
+          theme: AppTheme.light,
+          home: LessonScreen(lesson: lesson),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final option = find.byWidgetPredicate(
+      (w) => w is QuizOption && w.text == 'By having all of its methods',
+    );
+    await tester.scrollUntilVisible(
+      option,
+      400,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(option);
+    await tester.pumpAndSettle();
+    await tester.tap(option);
+    await tester.pumpAndSettle();
+    expect(find.text('Correct!'), findsOneWidget);
+    expect(state.xp, AppState.xpPerQuiz);
   });
 
   testWidgets('practice and progress tabs render', (tester) async {

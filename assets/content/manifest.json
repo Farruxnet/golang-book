@@ -1,21 +1,6 @@
 {
   "sections": [
     {
-      "id": "basic",
-      "title": "Basic",
-      "subtitle": "Syntax, types, control flow and the core building blocks of Go.",
-      "icon": "school",
-      "color": "#00ADD8",
-      "lessons": [
-        { "file": "basic/01_introduction.md", "summary": "What Go is, why it exists and your first program." },
-        { "file": "basic/02_variables_and_types.md", "summary": "Declaring variables, constants and Go's basic types." },
-        { "file": "basic/03_control_flow.md", "summary": "if, for and switch — the only loops and branches you need." },
-        { "file": "basic/04_functions.md", "summary": "Multiple return values, variadic functions and closures." },
-        { "file": "basic/05_slices_and_maps.md", "summary": "Go's workhorse collections and how they behave." },
-        { "file": "basic/06_structs_and_methods.md", "summary": "Modeling data with structs and attaching behavior." }
-      ]
-    },
-    {
       "id": "golang_uz",
       "title": "Go asoslari (go-lang.uz)",
       "subtitle": "Uzbek-language lessons from go-lang.uz: syntax, types, functions, concurrency and the standard library.",

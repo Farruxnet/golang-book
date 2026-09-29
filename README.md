@@ -20,11 +20,11 @@ progress tracking, streaks and XP on top.
 
 ## Adding content
 
-1. Put a `.md` file in `assets/content/basic`, `advanced` or `practice`.
+1. Put a `.md` file in `assets/content/golang_uz`, `advanced` or `practice`.
 2. Add it to the section's `lessons` list in `assets/content/manifest.json`:
 
 ```json
-{ "file": "basic/07_pointers.md", "summary": "Short one-line description." }
+{ "file": "golang_uz/49_pointers.md", "summary": "Short one-line description." }
 ```
 
 - The lesson title comes from the file's first `# Heading`, or from an optional `"title"` field.
