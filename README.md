@@ -35,6 +35,17 @@ runnable code, progress tracking, streaks and XP on top.
 
 Sections (title, subtitle, color, icon: `school`, `rocket`, `code`, `book`, `bolt`, `build`) are also defined in the manifest.
 
+### Lessons from go-lang.uz
+
+The **Go asoslari (go-lang.uz)** section (`assets/content/golang_uz`) holds the basic lessons of
+[go-lang.uz](https://github.com/Farruxnet/go-lang.uz), converted from MkDocs Markdown. Don't edit these
+files by hand; re-run the importer after the site changes:
+
+```sh
+pip install pyyaml
+python3 tool/import_golang_uz.py /path/to/go-lang.uz
+```
+
 ## Writing quizzes
 
 Put a `quiz` block anywhere in a lesson. It shows up inline in the lesson and

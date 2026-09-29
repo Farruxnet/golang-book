@@ -55,6 +55,7 @@ void main() {
 
     expect(book.sections.map((s) => s.title), [
       'Basic',
+      'Go asoslari (go-lang.uz)',
       'Advanced',
       'Practice',
     ]);

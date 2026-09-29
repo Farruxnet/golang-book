@@ -67,6 +67,7 @@ flutter:
   assets:
     - assets/content/
     - assets/content/basic/
+    - assets/content/golang_uz/
     - assets/content/advanced/
     - assets/content/practice/
     - assets/content/images/
