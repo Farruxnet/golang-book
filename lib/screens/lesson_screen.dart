@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../data/models.dart';
 import '../state/app_state.dart';
 import '../widgets/common.dart';
+import '../widgets/haptics.dart';
 import '../widgets/learning_timer.dart';
 import '../widgets/markdown_view.dart';
 import 'settings_sheet.dart';
@@ -27,6 +27,7 @@ class _LessonScreenState extends State<LessonScreen> {
   /// toggling a bookmark must not re-parse and re-highlight the lesson).
   Widget? _content;
   double? _contentScale;
+  double? _contentLineHeight;
 
   Lesson get lesson => widget.lesson;
 
@@ -88,12 +89,16 @@ class _LessonScreenState extends State<LessonScreen> {
     super.dispose();
   }
 
-  Widget _markdown(double scale) {
-    if (_content == null || _contentScale != scale) {
+  Widget _markdown(double scale, double lineHeight) {
+    if (_content == null ||
+        _contentScale != scale ||
+        _contentLineHeight != lineHeight) {
       _contentScale = scale;
+      _contentLineHeight = lineHeight;
       _content = MarkdownView(
         data: lesson.markdown,
         fontScale: scale,
+        lineHeight: lineHeight,
         quizzes: lesson.quizzes,
       );
     }
@@ -141,7 +146,7 @@ class _LessonScreenState extends State<LessonScreen> {
                 ),
               ),
               onPressed: () {
-                HapticFeedback.selectionClick();
+                Haptics.selection();
                 state.toggleBookmark(lesson);
               },
             ),
@@ -204,7 +209,7 @@ class _LessonScreenState extends State<LessonScreen> {
                   const SizedBox(height: 8),
                 ],
               ),
-              _markdown(scale),
+              _markdown(scale, state.lineHeight),
               const SizedBox(height: 32),
               _LessonFooter(lesson: lesson),
             ],
@@ -235,7 +240,7 @@ class _LessonFooter extends StatelessWidget {
         width: double.infinity,
         child: FilledButton.icon(
           onPressed: () {
-            HapticFeedback.lightImpact();
+            Haptics.light();
             state.setCompleted(lesson, true);
           },
           icon: const Icon(Icons.check_rounded),

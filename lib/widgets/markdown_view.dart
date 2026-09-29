@@ -14,11 +14,15 @@ class MarkdownView extends StatelessWidget {
     super.key,
     required this.data,
     this.fontScale = 1,
+    this.lineHeight = 1.7,
     this.quizzes = const [],
   });
 
   final String data;
   final double fontScale;
+
+  /// Line height of paragraphs (a multiple of the font size).
+  final double lineHeight;
 
   /// Quizzes of the lesson, matched to ```` ```quiz ```` blocks by content.
   final List<Quiz> quizzes;
@@ -59,7 +63,7 @@ class MarkdownView extends StatelessWidget {
     final s = fontScale;
     final body = TextStyle(
       fontSize: 16.5 * s,
-      height: 1.7,
+      height: lineHeight,
       color: scheme.onSurface.withValues(alpha: 0.9),
     );
     TextStyle heading(double size) => TextStyle(

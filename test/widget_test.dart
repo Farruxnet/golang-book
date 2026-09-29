@@ -6,6 +6,7 @@ import 'package:golang_book/data/models.dart';
 import 'package:golang_book/main.dart';
 import 'package:golang_book/screens/lesson_screen.dart';
 import 'package:golang_book/state/app_state.dart';
+import 'package:golang_book/theme.dart';
 import 'package:golang_book/widgets/quiz_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -124,5 +125,34 @@ void main() {
     await tester.tap(find.text('15 min'));
     await tester.pump();
     expect(state.dailyGoal, 15);
+  });
+
+  testWidgets('config tab changes theme, accent and haptics', (tester) async {
+    await pumpApp(tester);
+
+    await tester.tap(find.text('Config').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Dark'));
+    await tester.pumpAndSettle();
+    expect(state.themeMode, ThemeMode.dark);
+
+    state.accent = 4;
+    await tester.pumpAndSettle();
+    final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(app.theme!.colorScheme.primary, AppTheme.accents[4].light);
+
+    await tester.scrollUntilVisible(
+      find.text('Haptic feedback'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Haptic feedback'));
+    await tester.pump();
+    expect(state.haptics, isFalse);
+
+    state.resetPreferences();
+    expect(state.themeMode, ThemeMode.system);
+    expect(state.accent, 0);
+    expect(state.haptics, isTrue);
   });
 }

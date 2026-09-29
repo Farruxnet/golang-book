@@ -4,7 +4,7 @@ import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import 'bookmarks_screen.dart';
-import 'settings_sheet.dart';
+import 'shell.dart';
 
 class ProgressScreen extends StatelessWidget {
   const ProgressScreen({super.key});
@@ -124,9 +124,10 @@ class ProgressScreen extends StatelessWidget {
                         const Divider(indent: 56),
                         ListTile(
                           leading: const Icon(Icons.tune_rounded),
-                          title: const Text('Theme & text size'),
+                          title: const Text('Config'),
+                          subtitle: const Text('Theme, text size and more'),
                           trailing: const Icon(Icons.chevron_right_rounded),
-                          onTap: () => showSettingsSheet(context),
+                          onTap: () => Shell.goTo(context, ShellTab.config),
                         ),
                       ],
                     ),

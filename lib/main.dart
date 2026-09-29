@@ -57,15 +57,19 @@ class GoBookApp extends StatelessWidget {
     return AppScope(
       book: book,
       state: state,
-      // Only the theme mode rebuilds MaterialApp, not every progress update.
-      child: ValueListenableBuilder(
-        valueListenable: state.themeModeListenable,
-        builder: (context, mode, _) => MaterialApp(
+      // Only theme mode and accent rebuild MaterialApp, not every progress
+      // update.
+      child: ListenableBuilder(
+        listenable: Listenable.merge([
+          state.themeModeListenable,
+          state.accentListenable,
+        ]),
+        builder: (context, _) => MaterialApp(
           title: 'Go Book',
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.light,
-          darkTheme: AppTheme.dark,
-          themeMode: mode,
+          theme: AppTheme.build(state.accent, Brightness.light),
+          darkTheme: AppTheme.build(state.accent, Brightness.dark),
+          themeMode: state.themeMode,
           themeAnimationDuration: const Duration(milliseconds: 250),
           home: const Shell(),
         ),

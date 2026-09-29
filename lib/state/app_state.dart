@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/models.dart';
+import '../theme.dart';
+import '../widgets/haptics.dart';
 
 /// Reader state persisted on device: progress, gamification and preferences.
 class AppState extends ChangeNotifier {
@@ -15,13 +17,21 @@ class AppState extends ChangeNotifier {
       _lastLessonKey = _safe(() => _prefs.getString(_kLastLesson), null),
       themeModeListenable = ValueNotifier(_readThemeMode(_prefs)),
       _fontScale =
-          _safe(() => _prefs.getDouble(_kFontScale), null)?.clamp(0.85, 1.4) ??
+          _safe(() => _prefs.getDouble(_kFontScale), null)?.clamp(
+            fontScaleRange.min,
+            fontScaleRange.max,
+          ) ??
           1.0,
+      accentListenable = ValueNotifier(_readAccent(_prefs)),
+      _lineHeight = _readLineHeight(_prefs),
+      _haptics = _safe(() => _prefs.getBool(_kHaptics), null) ?? true,
       _xp = _safe(() => _prefs.getInt(_kXp), null) ?? 0,
       _dailyGoal = _safe(() => _prefs.getInt(_kDailyGoal), null) ?? 10,
       _answers = _readMap<int>(_prefs, _kAnswers),
       _activity = _readMap<int>(_prefs, _kActivity),
-      _scroll = _readMap<num>(_prefs, _kScroll);
+      _scroll = _readMap<num>(_prefs, _kScroll) {
+    Haptics.enabled = _haptics;
+  }
 
   static const _kCompleted = 'completed';
   static const _kBookmarks = 'bookmarks';
@@ -29,6 +39,9 @@ class AppState extends ChangeNotifier {
   static const _kLastLesson = 'last_lesson';
   static const _kTheme = 'theme_mode';
   static const _kFontScale = 'font_scale';
+  static const _kAccent = 'accent';
+  static const _kLineHeight = 'line_height';
+  static const _kHaptics = 'haptics';
   static const _kXp = 'xp';
   static const _kDailyGoal = 'daily_goal';
   static const _kAnswers = 'quiz_answers';
@@ -39,6 +52,10 @@ class AppState extends ChangeNotifier {
   static const xpPerQuiz = 10;
   static const xpPerLevel = 200;
   static const dailyGoalOptions = [5, 10, 15, 20, 30];
+  static const fontScaleRange = (min: 0.85, max: 1.4);
+
+  /// Line height of lesson text: compact, normal, relaxed.
+  static const lineHeightOptions = [1.5, 1.7, 1.9];
 
   final SharedPreferences _prefs;
   final Set<String> _completed;
@@ -48,6 +65,8 @@ class AppState extends ChangeNotifier {
   final Set<String> _rewarded;
   String? _lastLessonKey;
   double _fontScale;
+  double _lineHeight;
+  bool _haptics;
   int _xp;
   int _dailyGoal;
 
@@ -96,6 +115,16 @@ class AppState extends ChangeNotifier {
     return i >= 0 && i < ThemeMode.values.length
         ? ThemeMode.values[i]
         : ThemeMode.system;
+  }
+
+  static int _readAccent(SharedPreferences p) {
+    final i = _safe(() => p.getInt(_kAccent), null) ?? 0;
+    return i >= 0 && i < AppTheme.accents.length ? i : 0;
+  }
+
+  static double _readLineHeight(SharedPreferences p) {
+    final v = _safe(() => p.getDouble(_kLineHeight), null);
+    return v != null && lineHeightOptions.contains(v) ? v : 1.7;
   }
 
   void _writeMap(String key, Map<String, Object> map) =>
@@ -269,8 +298,43 @@ class AppState extends ChangeNotifier {
   /// progress changes must not rebuild the whole app.
   final ValueNotifier<ThemeMode> themeModeListenable;
 
+  /// Index into [AppTheme.accents]; also read only by [MaterialApp].
+  final ValueNotifier<int> accentListenable;
+
   ThemeMode get themeMode => themeModeListenable.value;
+  int get accent => accentListenable.value;
   double get fontScale => _fontScale;
+  double get lineHeight => _lineHeight;
+  bool get haptics => _haptics;
+
+  set accent(int index) {
+    accentListenable.value = index;
+    _prefs.setInt(_kAccent, index);
+    notifyListeners();
+  }
+
+  set lineHeight(double value) {
+    _lineHeight = value;
+    _prefs.setDouble(_kLineHeight, value);
+    notifyListeners();
+  }
+
+  set haptics(bool value) {
+    _haptics = value;
+    Haptics.enabled = value;
+    _prefs.setBool(_kHaptics, value);
+    notifyListeners();
+  }
+
+  /// Puts every preference back to its default. Progress is not touched.
+  void resetPreferences() {
+    themeMode = ThemeMode.system;
+    accent = 0;
+    fontScale = 1.0;
+    lineHeight = 1.7;
+    haptics = true;
+    dailyGoal = 10;
+  }
 
   set themeMode(ThemeMode mode) {
     themeModeListenable.value = mode;

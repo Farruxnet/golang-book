@@ -15,7 +15,8 @@ runnable code, progress tracking, streaks and XP on top.
 |-----|--------------|
 | **Learn** | Continue reading, daily goal & level, daily challenge, sections with their lessons |
 | **Practice** | Mixed quiz, daily challenge, quiz by topic, projects |
-| **Progress** | Level/XP, streak, stats, 12-week activity heatmap, daily goal, settings |
+| **Progress** | Level/XP, streak, stats, 12-week activity heatmap, daily goal, bookmarks |
+| **Config** | Theme (system/light/dark), accent color, text size, line spacing, daily goal, haptics, reset |
 
 ## Adding content
 

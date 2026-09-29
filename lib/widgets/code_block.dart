@@ -4,6 +4,7 @@ import 'package:flutter_highlight/themes/atom-one-dark.dart';
 import 'package:highlight/highlight.dart' show Node, highlight;
 
 import '../theme.dart';
+import 'haptics.dart';
 import 'run_sheet.dart';
 
 /// Syntax-highlighted code block with a language label and copy button.
@@ -156,7 +157,7 @@ class _CopyButtonState extends State<_CopyButton> {
   Future<void> _copy() async {
     await Clipboard.setData(ClipboardData(text: widget.code));
     if (!mounted) return;
-    HapticFeedback.selectionClick();
+    Haptics.selection();
     setState(() => _copied = true);
     await Future<void>.delayed(const Duration(seconds: 2));
     if (mounted) setState(() => _copied = false);

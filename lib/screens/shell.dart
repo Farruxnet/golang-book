@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
+import '../widgets/haptics.dart';
+import 'config_screen.dart';
 import 'home_screen.dart';
 import 'practice_screen.dart';
 import 'progress_screen.dart';
 
-enum ShellTab { learn, practice, progress }
+enum ShellTab { learn, practice, progress, config }
 
-/// Bottom navigation between the three main areas of the app.
+/// Bottom navigation between the main areas of the app.
 class Shell extends StatefulWidget {
   const Shell({super.key});
 
@@ -32,7 +33,7 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
 
   void _select(int i) {
     if (i == _index) return;
-    HapticFeedback.selectionClick();
+    Haptics.selection();
     setState(() => _index = i);
     _fade.forward(from: 0.3);
   }
@@ -57,7 +58,12 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
           opacity: _opacity,
           child: IndexedStack(
             index: _index,
-            children: const [HomeScreen(), PracticeScreen(), ProgressScreen()],
+            children: const [
+              HomeScreen(),
+              PracticeScreen(),
+              ProgressScreen(),
+              ConfigScreen(),
+            ],
           ),
         ),
         bottomNavigationBar: NavigationBar(
@@ -78,6 +84,11 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
               icon: Icon(Icons.insights_outlined),
               selectedIcon: Icon(Icons.insights_rounded),
               label: 'Progress',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.tune_outlined),
+              selectedIcon: Icon(Icons.tune_rounded),
+              label: 'Config',
             ),
           ],
         ),

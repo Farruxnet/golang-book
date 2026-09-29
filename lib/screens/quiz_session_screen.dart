@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../data/models.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
+import '../widgets/haptics.dart';
 import '../widgets/learning_timer.dart';
 import '../widgets/markdown_view.dart';
 import '../widgets/quiz_card.dart';
@@ -48,7 +48,7 @@ class _QuizSessionScreenState extends State<QuizSessionScreen> {
 
   void _check() {
     final correct = context.appState.answer(_quiz, _selected!);
-    correct ? HapticFeedback.lightImpact() : HapticFeedback.mediumImpact();
+    correct ? Haptics.light() : Haptics.medium();
     setState(() {
       _checked = true;
       if (correct) _correct++;

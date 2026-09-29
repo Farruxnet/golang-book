@@ -10,19 +10,69 @@ class AppTheme {
   static const wrong = Color(0xFFE5484D);
   static const streak = Color(0xFFF08A24);
 
-  /// Built once: rebuilding ThemeData would invalidate every Theme.of().
-  static final ThemeData light = _build(Brightness.light);
-  static final ThemeData dark = _build(Brightness.dark);
+  /// Accent colors the reader can pick in Config. The first is the default.
+  static const accents = [
+    AccentColor(
+      'Go blue',
+      goBlue,
+      light: Color(0xFF007EA3),
+      dark: Color(0xFF4CC8EA),
+      onDark: Color(0xFF00202B),
+    ),
+    AccentColor(
+      'Violet',
+      Color(0xFF8B5CF6),
+      light: Color(0xFF6D3FD9),
+      dark: Color(0xFFB79CFF),
+      onDark: Color(0xFF1B1033),
+    ),
+    AccentColor(
+      'Green',
+      Color(0xFF1F9D63),
+      light: Color(0xFF157347),
+      dark: Color(0xFF5FD39A),
+      onDark: Color(0xFF06231A),
+    ),
+    AccentColor(
+      'Orange',
+      Color(0xFFF08A24),
+      light: Color(0xFFB85F0A),
+      dark: Color(0xFFFFB066),
+      onDark: Color(0xFF2B1600),
+    ),
+    AccentColor(
+      'Rose',
+      Color(0xFFE5484D),
+      light: Color(0xFFB3262B),
+      dark: Color(0xFFFF8A8E),
+      onDark: Color(0xFF2E0709),
+    ),
+  ];
 
-  static ThemeData _build(Brightness brightness) {
+  /// Built once per accent and brightness: rebuilding ThemeData would
+  /// invalidate every Theme.of().
+  static final _cache = <(int, Brightness), ThemeData>{};
+
+  static ThemeData build(int accent, Brightness brightness) {
+    final i = accent >= 0 && accent < accents.length ? accent : 0;
+    return _cache.putIfAbsent(
+      (i, brightness),
+      () => _build(accents[i], brightness),
+    );
+  }
+
+  static ThemeData get light => build(0, Brightness.light);
+  static ThemeData get dark => build(0, Brightness.dark);
+
+  static ThemeData _build(AccentColor accent, Brightness brightness) {
     final isDark = brightness == Brightness.dark;
     final scheme =
         ColorScheme.fromSeed(
-          seedColor: goBlue,
+          seedColor: accent.seed,
           brightness: brightness,
         ).copyWith(
-          primary: isDark ? const Color(0xFF4CC8EA) : const Color(0xFF007EA3),
-          onPrimary: isDark ? const Color(0xFF00202B) : Colors.white,
+          primary: isDark ? accent.dark : accent.light,
+          onPrimary: isDark ? accent.onDark : Colors.white,
           surface: isDark ? const Color(0xFF101318) : const Color(0xFFF7F8FA),
           onSurface: isDark ? const Color(0xFFE6E8EB) : const Color(0xFF14171C),
           onSurfaceVariant: isDark
@@ -171,6 +221,24 @@ class AppTheme {
       ),
     );
   }
+}
+
+/// One selectable accent: [seed] feeds the color scheme, the others are the
+/// primary color tuned for contrast on light and dark surfaces.
+class AccentColor {
+  const AccentColor(
+    this.name,
+    this.seed, {
+    required this.light,
+    required this.dark,
+    required this.onDark,
+  });
+
+  final String name;
+  final Color seed;
+  final Color light;
+  final Color dark;
+  final Color onDark;
 }
 
 /// Incoming page fades in while rising a few pixels; closing reverses it.

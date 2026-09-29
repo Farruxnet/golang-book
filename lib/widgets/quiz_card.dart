@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import '../data/models.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import 'common.dart';
+import 'haptics.dart';
 import 'markdown_view.dart';
 
 /// Multiple-choice question inside a lesson. The answer is saved in
@@ -152,7 +152,7 @@ class QuizOption extends StatelessWidget {
               onTap: onTap == null
                   ? null
                   : () {
-                      HapticFeedback.selectionClick();
+                      Haptics.selection();
                       onTap!();
                     },
               child: Padding(
