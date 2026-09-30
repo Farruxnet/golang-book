@@ -66,8 +66,6 @@ flutter:
   assets:
     - assets/content/
     - assets/content/golang_uz/
-    - assets/content/advanced/
-    - assets/content/practice/
     - assets/content/images/
 
   # To add assets to your application, add an assets section, like this:

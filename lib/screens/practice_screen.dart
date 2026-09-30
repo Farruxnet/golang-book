@@ -41,6 +41,15 @@ class PracticeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
+            if (book.allQuizzes.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 48),
+                child: EmptyState(
+                  icon: Icons.quiz_outlined,
+                  title: context.s.noQuizzes,
+                  message: context.s.noQuizzesHint,
+                ),
+              ),
             if (book.allQuizzes.isNotEmpty)
               FadeSlideIn(
                 index: 1,

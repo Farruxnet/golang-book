@@ -21,11 +21,44 @@ void main() {
     state = AppState(await SharedPreferences.getInstance());
   });
 
-  Future<void> pumpApp(WidgetTester tester) async {
+  /// The real book has no quizzes yet, so quiz screens are tested on a small
+  /// book of their own.
+  Book quizBook() {
+    const body =
+        'Interfaces are implicit.\n\n'
+        '```quiz\n'
+        'How does a type implement an interface in Go?\n'
+        '- With the `implements` keyword\n'
+        '+ By having all of its methods\n'
+        '> Interfaces are satisfied implicitly.\n'
+        '```\n';
+    return Book([
+      Section(
+        id: 'test',
+        title: 'Test',
+        subtitle: '',
+        icon: Icons.book,
+        color: Colors.blue,
+        lessons: [
+          Lesson(
+            id: 'interfaces',
+            title: 'Interfaces',
+            summary: '',
+            markdown: body,
+            quizzes: Quiz.parseAll(body),
+          ),
+        ],
+      ),
+    ]);
+  }
+
+  Future<void> pumpApp(WidgetTester tester, {Book? withBook}) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.75;
     addTearDown(tester.view.reset);
-    book = (await tester.runAsync(() => BookRepository.load(rootBundle)))!;
+    book =
+        withBook ??
+        (await tester.runAsync(() => BookRepository.load(rootBundle)))!;
     await tester.pumpWidget(GoBookApp(book: book, state: state));
     await tester.pumpAndSettle();
   }
@@ -56,12 +89,7 @@ void main() {
   testWidgets('read a lesson and complete it', (tester) async {
     await pumpApp(tester);
 
-    expect(book.sections.map((s) => s.title), [
-      'Go asoslari (go-lang.uz)',
-      'Advanced',
-      'Practice',
-    ]);
-    expect(book.allQuizzes, isNotEmpty);
+    expect(book.sections.map((s) => s.title), ['Go asoslari']);
     expect(find.text('Start here'), findsOneWidget);
 
     // The Start here card opens the first lesson of the book.
@@ -94,8 +122,8 @@ void main() {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 2.75;
     addTearDown(tester.view.reset);
-    book = (await tester.runAsync(() => BookRepository.load(rootBundle)))!;
-    final lesson = book.allLessons.firstWhere((l) => l.title == 'Interfaces');
+    book = quizBook();
+    final lesson = book.allLessons.single;
     await tester.pumpWidget(
       AppScope(
         book: book,
@@ -125,7 +153,7 @@ void main() {
   });
 
   testWidgets('practice and progress tabs render', (tester) async {
-    await pumpApp(tester);
+    await pumpApp(tester, withBook: quizBook());
 
     await tester.tap(find.text('Practice').last);
     await tester.pumpAndSettle();
@@ -266,5 +294,17 @@ void main() {
     expect(state.onboarded, isTrue);
     expect(state.language, 'en');
     expect(find.text('Start here'), findsOneWidget);
+  });
+
+  testWidgets('practice tab explains that there are no quizzes yet', (
+    tester,
+  ) async {
+    await pumpApp(tester);
+    expect(book.allQuizzes, isEmpty);
+
+    await tester.tap(find.text('Practice').last);
+    await tester.pumpAndSettle();
+    expect(find.text('No quizzes yet'), findsOneWidget);
+    expect(find.text('Quick quiz'), findsNothing);
   });
 }

@@ -28,7 +28,7 @@ translation to every entry. Lesson content is not translated.
 
 ## Adding content
 
-1. Put a `.md` file in `assets/content/golang_uz`, `advanced` or `practice`.
+1. Put a `.md` file in `assets/content/golang_uz` (or a new folder).
 2. Add it to the section's `lessons` list in `assets/content/manifest.json`:
 
 ```json
@@ -45,7 +45,7 @@ Sections (title, subtitle, color, icon: `school`, `rocket`, `code`, `book`, `bol
 
 ### Lessons from go-lang.uz
 
-The **Go asoslari (go-lang.uz)** section (`assets/content/golang_uz`) holds the basic lessons of
+The **Go asoslari** section (`assets/content/golang_uz`) holds the basic lessons of
 [go-lang.uz](https://github.com/Farruxnet/go-lang.uz), converted from MkDocs Markdown. Don't edit these
 files by hand; re-run the importer after the site changes:
 

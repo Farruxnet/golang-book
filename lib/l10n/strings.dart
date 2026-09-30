@@ -117,6 +117,13 @@ class S {
     "O'rganganlaringizni tekshiring: qisqa testlar",
     'Короткие тесты для проверки знаний',
   );
+  String get noQuizzes =>
+      _t('No quizzes yet', "Hali testlar yo'q", 'Тестов пока нет');
+  String get noQuizzesHint => _t(
+    'Quizzes will show up here as lessons get them.',
+    "Darslarga testlar qo'shilgach, ular shu yerda paydo bo'ladi.",
+    'Тесты появятся здесь, когда их добавят к урокам.',
+  );
   String get quickQuiz => _t('Quick quiz', 'Tezkor test', 'Быстрый тест');
   String randomQuestions(int n) => _t(
     '$n random questions',

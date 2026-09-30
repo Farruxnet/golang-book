@@ -119,7 +119,7 @@ def main():
     lines = ',\n'.join(f'        {{ "file": {J(e["file"])}, "summary": {J(e["summary"])} }}' for e in entries)
     block = f'''    {{
       "id": "golang_uz",
-      "title": "Go asoslari (go-lang.uz)",
+      "title": "Go asoslari",
       "subtitle": "Uzbek-language lessons from go-lang.uz: syntax, types, functions, concurrency and the standard library.",
       "icon": "book",
       "color": "#0EA5A4",
@@ -129,10 +129,16 @@ def main():
     }},
 '''
     path = f'{DST}/manifest.json'
-    text = open(path, encoding='utf-8').read()
-    text = re.sub(r'    \{\n      "id": "golang_uz".*?\n    \},\n', '', text, flags=re.S)
-    marker = '    {\n      "id": "advanced"'
-    open(path, 'w', encoding='utf-8').write(text.replace(marker, block + marker, 1))
+    others = [
+        x for x in json.load(open(path, encoding='utf-8'))['sections']
+        if x['id'] != 'golang_uz'
+    ]
+    blocks = [block.rstrip().rstrip(',')]
+    for x in others:
+        text = json.dumps(x, ensure_ascii=False, indent=2)
+        blocks.append('\n'.join('    ' + l for l in text.split('\n')))
+    out = '{\n  "sections": [\n' + ',\n'.join(blocks) + '\n  ]\n}\n'
+    open(path, 'w', encoding='utf-8').write(out)
     print(len(entries), 'lessons')
 
 main()

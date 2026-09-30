@@ -2,7 +2,7 @@
   "sections": [
     {
       "id": "golang_uz",
-      "title": "Go asoslari (go-lang.uz)",
+      "title": "Go asoslari",
       "subtitle": "Uzbek-language lessons from go-lang.uz: syntax, types, functions, concurrency and the standard library.",
       "icon": "book",
       "color": "#0EA5A4",
@@ -55,31 +55,6 @@
         { "file": "golang_uz/46_hashing.md", "summary": "Heshlash (hashing) — ixtiyoriy uzunlikdagi ma’lumotdan belgilangan uzunlikdagi xesh qiymat, ya’ni digest hosil qilish jarayoni." },
         { "file": "golang_uz/47_regex.md", "summary": "Regular expression, qisqacha regex, matndagi takrorlanuvchi shaklni ifodalovchi shablondir." },
         { "file": "golang_uz/48_environment_ozgaruvchilari.md", "summary": "Muhit o‘zgaruvchisi (environment variable) — operatsion tizim jarayonga nom va qiymat ko‘rinishida uzatadigan konfiguratsiya." }
-      ]
-    },
-    {
-      "id": "advanced",
-      "title": "Advanced",
-      "subtitle": "Interfaces, concurrency, generics and idiomatic error handling.",
-      "icon": "rocket",
-      "color": "#8B5CF6",
-      "lessons": [
-        { "file": "advanced/01_interfaces.md", "summary": "Implicit interfaces and designing small abstractions." },
-        { "file": "advanced/02_error_handling.md", "summary": "Errors as values, wrapping, errors.Is and errors.As." },
-        { "file": "advanced/03_goroutines_and_channels.md", "summary": "Lightweight concurrency and communicating by sharing." },
-        { "file": "advanced/04_generics.md", "summary": "Type parameters and constraints since Go 1.18." }
-      ]
-    },
-    {
-      "id": "practice",
-      "title": "Practice",
-      "subtitle": "Hands-on exercises and small projects to lock in what you learned.",
-      "icon": "code",
-      "color": "#F59E0B",
-      "lessons": [
-        { "file": "practice/01_fizzbuzz_and_warmups.md", "summary": "Short exercises to warm up your Go muscles." },
-        { "file": "practice/02_cli_todo_app.md", "summary": "Build a command-line todo list backed by a JSON file." },
-        { "file": "practice/03_rest_api.md", "summary": "A small JSON REST API using only the standard library." }
       ]
     }
   ]
