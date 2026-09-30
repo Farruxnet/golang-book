@@ -427,9 +427,9 @@ for {
     default:
     }
 }
-
-bu sikl hech narsani kutmaydi. U imkon qadar tez aylanaveradi.
 ```
+
+Bu sikl hech narsani kutmaydi. U imkon qadar tez aylanaveradi.
 
 ## Vaqt chegarasi
 
