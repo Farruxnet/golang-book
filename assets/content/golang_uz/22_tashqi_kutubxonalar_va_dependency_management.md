@@ -294,13 +294,13 @@ Masalan:
 
 ```bash
 go install example.com/cmd/tool@version
+```
 
 `go install` ko‘rsatilgan command’ni o‘rnatadi.
 
 U joriy loyihaning `go.mod` fayliga dependency qo‘shmaydi.
 
 Demak, `go get` bilan modul dependencylarini boshqarish va `go install` bilan CLI tool o‘rnatish bir xil vazifa emas.
-```
 
 ## Bevosita va bilvosita dependency
 
