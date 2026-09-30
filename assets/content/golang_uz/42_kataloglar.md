@@ -1063,13 +1063,13 @@ Ayniqsa quyidagi qiymatlar xavfli bo‘lishi mumkin:
 
 ```text
 .
+```
 
 yoki noto‘g‘ri hisoblangan keng katalog yo‘li.
 
 `RemoveAll`dan oldin yo‘l aynan dastur boshqaradigan katalog ekanini aniq tekshirish kerak.
 
 Foydalanuvchi HTTP, CLI yoki boshqa tashqi manbadan yuborgan yo‘lni hech qanday tekshiruvsiz to‘g‘ridan-to‘g‘ri `os.RemoveAll`ga bermang.
-```
 
 `os.RemoveAll` mavjud bo‘lmagan yo‘lga chaqirilsa, odatda `nil` qaytaradi.
 
