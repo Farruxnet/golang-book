@@ -62,11 +62,11 @@ Quyidagi yozuv noto‘g‘ri:
 
 ```go
 // go:embed hello.txt
+```
 
 `go:embed` oldidan bo‘sh joy bo‘lishi mumkin emas.
 
 Direktiva paket darajasidagi bitta o‘zgaruvchi deklaratsiyasiga tegishli bo‘ladi. Uni `func main()` yoki boshqa funksiya ichidagi lokal o‘zgaruvchiga qo‘llab bo‘lmaydi.
-```
 
 ## Bitta matnli faylni `string` sifatida joylash
 
