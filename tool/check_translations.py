@@ -50,7 +50,7 @@ def skeleton(code):
     code = re.sub(r"'(\\.|[^'\\\n])+'", "''", code)
     code = re.sub(r'//.*', '', code)
     code = re.sub(r'[^\W\d]\w*', lambda m: m.group() if m.group() in KEYWORDS else 'x', code)
-    return [l.strip() for l in code.split('\n') if l.strip()]
+    return [' '.join(l.split()) for l in code.split('\n') if l.strip()]
 
 
 def main():
