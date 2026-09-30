@@ -1,4 +1,4 @@
-package uz.golang.book
+package com.techup.gobook
 
 import io.flutter.embedding.android.FlutterActivity
 

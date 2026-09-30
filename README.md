@@ -28,7 +28,7 @@ translation to every entry. Lesson content is not translated.
 
 ## Release checklist
 
-- **App id:** `uz.golang.book` (`android/app/build.gradle.kts`). Change it before the first upload if you want another one; it can't change after.
+- **App id:** `com.techup.gobook` (`android/app/build.gradle.kts`). Change it before the first upload if you want another one; it can't change after.
 - **Version:** `version:` in `pubspec.yaml` and `AppInfo.version` in `lib/app_info.dart` must match. Raise the build number (`+N`) on every upload.
 - **Signing:** create an upload key and `android/key.properties` (git-ignored):
   ```properties
