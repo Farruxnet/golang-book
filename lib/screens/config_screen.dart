@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../app_info.dart';
 import '../l10n/strings.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
+import '../widgets/haptics.dart';
 import '../widgets/markdown_view.dart';
 import 'privacy_screen.dart';
 
@@ -22,7 +22,6 @@ class ConfigScreen extends StatelessWidget {
     final s = context.s;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final range = AppState.fontScaleRange;
 
     return EntranceScope(
       child: SafeArea(
@@ -52,7 +51,10 @@ class ConfigScreen extends StatelessWidget {
                               ChoiceChip(
                                 label: Text(S.nativeNames[code]!),
                                 selected: state.language == code,
-                                onSelected: (_) => state.language = code,
+                                onSelected: (_) {
+                                  Haptics.selection();
+                                  state.language = code;
+                                },
                               ),
                           ],
                         ),
@@ -82,31 +84,7 @@ class ConfigScreen extends StatelessWidget {
                       children: [
                         Text(s.theme, style: theme.textTheme.labelLarge),
                         const SizedBox(height: 8),
-                        SizedBox(
-                          width: double.infinity,
-                          child: SegmentedButton<ThemeMode>(
-                            segments: [
-                              ButtonSegment(
-                                value: ThemeMode.system,
-                                icon: const Icon(Icons.brightness_auto_rounded),
-                                label: Text(s.themeSystem),
-                              ),
-                              ButtonSegment(
-                                value: ThemeMode.light,
-                                icon: const Icon(Icons.light_mode_rounded),
-                                label: Text(s.themeLight),
-                              ),
-                              ButtonSegment(
-                                value: ThemeMode.dark,
-                                icon: const Icon(Icons.dark_mode_rounded),
-                                label: Text(s.themeDark),
-                              ),
-                            ],
-                            selected: {state.themeMode},
-                            onSelectionChanged: (v) =>
-                                state.themeMode = v.first,
-                          ),
-                        ),
+                        const ThemeModeSelector(),
                         const SizedBox(height: 20),
                         Text(s.accentColor, style: theme.textTheme.labelLarge),
                         const SizedBox(height: 12),
@@ -119,7 +97,10 @@ class ConfigScreen extends StatelessWidget {
                                 accent: AppTheme.accents[i],
                                 name: s.accentName(i),
                                 selected: state.accent == i,
-                                onTap: () => state.accent = i,
+                                onTap: () {
+                                  Haptics.selection();
+                                  state.accent = i;
+                                },
                               ),
                           ],
                         ),
@@ -140,34 +121,7 @@ class ConfigScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Text(s.textSize, style: theme.textTheme.labelLarge),
-                            const Spacer(),
-                            Text(
-                              '${(state.fontScale * 100).round()}%',
-                              style: theme.textTheme.labelLarge,
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const Text('A', style: TextStyle(fontSize: 14)),
-                            Expanded(
-                              child: Slider(
-                                value: state.fontScale.clamp(
-                                  range.min,
-                                  range.max,
-                                ),
-                                min: range.min,
-                                max: range.max,
-                                divisions: 11,
-                                onChanged: (v) => state.fontScale = v,
-                              ),
-                            ),
-                            const Text('A', style: TextStyle(fontSize: 24)),
-                          ],
-                        ),
+                        const FontScaleSlider(),
                         const SizedBox(height: 8),
                         Text(s.lineSpacing, style: theme.textTheme.labelLarge),
                         const SizedBox(height: 8),
@@ -185,8 +139,10 @@ class ConfigScreen extends StatelessWidget {
                                 ),
                             ],
                             selected: {state.lineHeight},
-                            onSelectionChanged: (v) =>
-                                state.lineHeight = v.first,
+                            onSelectionChanged: (v) {
+                              Haptics.selection();
+                              state.lineHeight = v.first;
+                            },
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -234,8 +190,10 @@ class ConfigScreen extends StatelessWidget {
                                 ButtonSegment(value: m, label: Text('$m')),
                             ],
                             selected: {state.dailyGoal},
-                            onSelectionChanged: (v) =>
-                                state.dailyGoal = v.first,
+                            onSelectionChanged: (v) {
+                              Haptics.selection();
+                              state.dailyGoal = v.first;
+                            },
                           ),
                         ),
                       ],
@@ -267,7 +225,7 @@ class ConfigScreen extends StatelessWidget {
                           leading: const Icon(Icons.settings_backup_restore),
                           title: Text(s.restoreDefaults),
                           subtitle: Text(s.progressKept),
-                          onTap: () => _confirm(
+                          onTap: () => confirmAction(
                             context,
                             title: s.restoreDefaultsQ,
                             message: s.restoreDefaultsBody,
@@ -286,7 +244,7 @@ class ConfigScreen extends StatelessWidget {
                             style: TextStyle(color: scheme.error),
                           ),
                           subtitle: Text(s.resetProgressHint),
-                          onTap: () => _confirm(
+                          onTap: () => confirmAction(
                             context,
                             title: s.resetProgressQ,
                             message: s.resetProgressBody,
@@ -314,11 +272,8 @@ class ConfigScreen extends StatelessWidget {
                           title: Text(s.privacyPolicy),
                           subtitle: Text(s.privacyShort),
                           trailing: const Icon(Icons.chevron_right_rounded),
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => const PrivacyScreen(),
-                            ),
-                          ),
+                          onTap: () =>
+                              pushScreen<void>(context, const PrivacyScreen()),
                         ),
                         const Divider(indent: 56),
                         ListTile(
@@ -326,10 +281,7 @@ class ConfigScreen extends StatelessWidget {
                           title: Text(s.website),
                           subtitle: const Text('go-lang.uz'),
                           trailing: const Icon(Icons.open_in_new_rounded),
-                          onTap: () => launchUrl(
-                            Uri.parse(AppInfo.website),
-                            mode: LaunchMode.externalApplication,
-                          ),
+                          onTap: () => openExternal(Uri.parse(AppInfo.website)),
                         ),
                         const Divider(indent: 56),
                         ListTile(
@@ -361,33 +313,6 @@ class ConfigScreen extends StatelessWidget {
       ),
     );
   }
-
-  static Future<void> _confirm(
-    BuildContext context, {
-    required String title,
-    required String message,
-    required String action,
-    required VoidCallback onConfirm,
-  }) async {
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(context.s.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            child: Text(action),
-          ),
-        ],
-      ),
-    );
-    if (ok == true) onConfirm();
-  }
 }
 
 class _AccentDot extends StatelessWidget {
@@ -417,7 +342,9 @@ class _AccentDot extends StatelessWidget {
       child: InkResponse(
         onTap: onTap,
         radius: 28,
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
           width: 44,
           height: 44,
           decoration: BoxDecoration(
@@ -428,14 +355,17 @@ class _AccentDot extends StatelessWidget {
               width: 2.5,
             ),
           ),
-          child: selected
-              ? Icon(
-                  Icons.check_rounded,
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? accent.onDark
-                      : Colors.white,
-                )
-              : null,
+          child: AnimatedScale(
+            scale: selected ? 1 : 0,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutBack,
+            child: Icon(
+              Icons.check_rounded,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? accent.onDark
+                  : Colors.white,
+            ),
+          ),
         ),
       ),
     );

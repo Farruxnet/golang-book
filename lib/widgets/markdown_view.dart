@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:markdown/markdown.dart' as md;
-import 'package:url_launcher/url_launcher.dart';
 
 import '../data/models.dart';
 import '../theme.dart';
 import 'code_block.dart';
+import 'common.dart';
 import 'quiz_card.dart';
 
 /// Renders lesson Markdown with book typography and highlighted code.
@@ -27,14 +27,39 @@ class MarkdownView extends StatelessWidget {
   /// Quizzes of the lesson, matched to ```` ```quiz ```` blocks by content.
   final List<Quiz> quizzes;
 
+  static final _fence = RegExp(r'^\s*(`{3,}|~{3,})');
+  static final _heading = RegExp(r'^#{1,3}\s');
+
+  /// Splits a long document at its headings (outside code blocks), so a
+  /// lazy list builds only the parts on screen instead of the whole lesson
+  /// at once.
+  static List<String> split(String markdown) {
+    final chunks = <String>[];
+    final current = StringBuffer();
+    String? fence;
+    for (final line in markdown.split('\n')) {
+      final marker = _fence.firstMatch(line)?.group(1);
+      if (marker != null) {
+        if (fence == null) {
+          fence = marker;
+        } else if (marker[0] == fence[0] && marker.length >= fence.length) {
+          fence = null;
+        }
+      } else if (fence == null &&
+          _heading.hasMatch(line) &&
+          current.toString().trim().isNotEmpty) {
+        chunks.add(current.toString());
+        current.clear();
+      }
+      current.writeln(line);
+    }
+    if (current.toString().trim().isNotEmpty) chunks.add(current.toString());
+    return chunks;
+  }
+
   static Future<void> _openLink(String? href) async {
     final uri = href == null ? null : Uri.tryParse(href);
-    if (uri == null || !uri.hasScheme) return;
-    try {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } catch (e) {
-      debugPrint('Could not open $uri: $e');
-    }
+    if (uri != null && uri.hasScheme) await openExternal(uri);
   }
 
   static Widget _image(Uri uri, String? title, String? alt) {

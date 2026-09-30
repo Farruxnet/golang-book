@@ -135,7 +135,12 @@ class _CopyButtonState extends State<_CopyButton> {
   bool _copied = false;
 
   Future<void> _copy() async {
-    await Clipboard.setData(ClipboardData(text: widget.code));
+    try {
+      await Clipboard.setData(ClipboardData(text: widget.code));
+    } catch (e) {
+      debugPrint('Copy failed: $e');
+      return;
+    }
     if (!mounted) return;
     Haptics.selection();
     setState(() => _copied = true);

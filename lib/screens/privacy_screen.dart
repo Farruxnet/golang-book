@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_info.dart';
 import '../state/app_state.dart';
+import '../widgets/common.dart';
 
 /// The privacy policy, in the app's language. PRIVACY.md holds the same text
 /// for the store listing.
@@ -15,7 +16,7 @@ class PrivacyScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(s.privacyPolicy)),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+        padding: listPadding(context).copyWith(left: 20, right: 20),
         children: [
           Text(
             s.privacyUpdated(AppInfo.privacyUpdated),

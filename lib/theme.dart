@@ -210,12 +210,13 @@ class AppTheme {
         insetPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
+      // iOS keeps its native transition for the edge swipe back.
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: SoftPageTransitionsBuilder(),
-          TargetPlatform.iOS: SoftPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
           TargetPlatform.linux: SoftPageTransitionsBuilder(),
-          TargetPlatform.macOS: SoftPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
           TargetPlatform.windows: SoftPageTransitionsBuilder(),
         },
       ),
@@ -241,21 +242,26 @@ class AccentColor {
   final Color onDark;
 }
 
-/// Incoming page fades in while rising a few pixels; closing reverses it.
-/// Only opacity and translation animate, so no layout work per frame.
+/// Incoming page fades in while rising a few pixels and the page below
+/// drifts up slightly; closing reverses both. Only opacity and translation
+/// animate, so no layout work per frame.
 class SoftPageTransitionsBuilder extends PageTransitionsBuilder {
   const SoftPageTransitionsBuilder();
 
   @override
-  Duration get transitionDuration => const Duration(milliseconds: 280);
+  Duration get transitionDuration => const Duration(milliseconds: 300);
 
   @override
-  Duration get reverseTransitionDuration => const Duration(milliseconds: 220);
+  Duration get reverseTransitionDuration => const Duration(milliseconds: 240);
 
   static final _curve = CurveTween(curve: Curves.easeOutCubic);
   static final _offset = Tween(
     begin: const Offset(0, 0.035),
     end: Offset.zero,
+  ).chain(_curve);
+  static final _behind = Tween(
+    begin: Offset.zero,
+    end: const Offset(0, -0.015),
   ).chain(_curve);
 
   @override
@@ -267,9 +273,15 @@ class SoftPageTransitionsBuilder extends PageTransitionsBuilder {
     Widget child,
   ) {
     // drive() attaches no listeners of its own, so nothing leaks per rebuild.
-    return FadeTransition(
-      opacity: animation.drive(_curve),
-      child: SlideTransition(position: animation.drive(_offset), child: child),
+    return SlideTransition(
+      position: secondaryAnimation.drive(_behind),
+      child: FadeTransition(
+        opacity: animation.drive(_curve),
+        child: SlideTransition(
+          position: animation.drive(_offset),
+          child: child,
+        ),
+      ),
     );
   }
 }

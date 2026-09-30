@@ -1,7 +1,7 @@
 # Go Book
 
-A Flutter app for learning Go. Lessons are Markdown files; the app adds quizzes,
-progress tracking, streaks and XP on top.
+A Flutter app for learning Go in Uzbek, English or Russian. Lessons are Markdown
+files; the app adds quizzes, progress tracking, streaks and XP on top.
 
 ## Related repositories
 
@@ -20,11 +20,23 @@ progress tracking, streaks and XP on top.
 
 ## Languages
 
-The app's own texts (menus, buttons, messages) come in Uzbek, English and Russian and are
+The whole app, lessons included, comes in Uzbek, English and Russian. The language is
 chosen on first launch (the welcome screen is followed by a short intro) and later in
-**Config → Language**. English is the default.
-All of them live in `lib/l10n/strings.dart`; add a language by adding its code to `S.codes` and a
-translation to every entry. Lesson content is not translated.
+**Config → Language**; switching reloads the lessons in place. English is the default.
+
+- **Interface texts** live in `lib/l10n/strings.dart`. Add a language by adding its code to
+  `S.codes` and a translation to every entry.
+- **Lessons** are written in Uzbek (`assets/content/manifest.json` and its files). A
+  translation lives in `assets/content/i18n/<code>/`:
+  - `manifest.json` with the section `title`, `subtitle` and a `summaries` map
+    (lesson file → summary), keyed by section id;
+  - the lesson files under the same paths as the originals, e.g.
+    `i18n/en/golang_uz/01_birinchi_dastur.md`.
+
+  Anything missing falls back to the Uzbek original, and lesson keys are the same in every
+  language, so progress, bookmarks and quiz answers carry over. Register new translation
+  folders under `flutter/assets` in `pubspec.yaml`. Keep code identical across languages;
+  only prose, comments and printed strings are translated.
 
 ## Release checklist
 
@@ -63,7 +75,8 @@ Sections (title, subtitle, color, icon: `school`, `rocket`, `code`, `book`, `bol
 
 The **Go asoslari** section (`assets/content/golang_uz`) holds the basic lessons of
 [go-lang.uz](https://github.com/Farruxnet/go-lang.uz), converted from MkDocs Markdown. Don't edit these
-files by hand; re-run the importer after the site changes:
+files by hand; re-run the importer after the site changes (then update the matching
+files in `assets/content/i18n/en` and `i18n/ru`):
 
 ```sh
 pip install pyyaml

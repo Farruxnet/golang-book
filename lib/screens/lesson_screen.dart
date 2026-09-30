@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../data/models.dart';
@@ -23,13 +25,14 @@ class _LessonScreenState extends State<LessonScreen> {
   final _showTitle = ValueNotifier<bool>(false);
   late AppState _state;
 
-  /// The rendered Markdown, reused across rebuilds (answering a quiz or
-  /// toggling a bookmark must not re-parse and re-highlight the lesson).
-  Widget? _content;
-  double? _contentScale;
-  double? _contentLineHeight;
+  /// The lesson in the current book: when the language changes while it is
+  /// open, the same lesson in the new language.
+  late Lesson lesson = widget.lesson;
 
-  Lesson get lesson => widget.lesson;
+  /// The rendered Markdown in parts, reused across rebuilds (answering a
+  /// quiz or toggling a bookmark must not re-parse and re-highlight it).
+  List<Widget> _blocks = const [];
+  (Lesson, double, double)? _blocksKey;
 
   @override
   void initState() {
@@ -42,6 +45,7 @@ class _LessonScreenState extends State<LessonScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _state = context.appState;
+    lesson = context.book.lessonByKey(widget.lesson.key) ?? widget.lesson;
   }
 
   /// Jumps back to where the reader stopped last time.
@@ -52,8 +56,7 @@ class _LessonScreenState extends State<LessonScreen> {
     if (offset < 200 || _state.isCompleted(lesson) || !_scroll.hasClients) {
       return;
     }
-    if (offset > _scroll.position.maxScrollExtent * 0.9) return;
-    _scroll.jumpTo(offset);
+    _jumpTo(offset, attempts: 4);
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
@@ -70,6 +73,20 @@ class _LessonScreenState extends State<LessonScreen> {
           ),
         ),
       );
+  }
+
+  /// The list builds lazily, so its length is only an estimate until the
+  /// parts near [offset] are laid out: jump as far as possible, then again
+  /// once the list has measured more of the lesson.
+  void _jumpTo(double offset, {required int attempts}) {
+    if (!mounted || !_scroll.hasClients) return;
+    final max = _scroll.position.maxScrollExtent;
+    _scroll.jumpTo(math.min(offset, max));
+    if (offset > max && attempts > 1) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _jumpTo(offset, attempts: attempts - 1),
+      );
+    }
   }
 
   void _onScroll() {
@@ -89,20 +106,21 @@ class _LessonScreenState extends State<LessonScreen> {
     super.dispose();
   }
 
-  Widget _markdown(double scale, double lineHeight) {
-    if (_content == null ||
-        _contentScale != scale ||
-        _contentLineHeight != lineHeight) {
-      _contentScale = scale;
-      _contentLineHeight = lineHeight;
-      _content = MarkdownView(
-        data: lesson.markdown,
-        fontScale: scale,
-        lineHeight: lineHeight,
-        quizzes: lesson.quizzes,
-      );
+  List<Widget> _content(double scale, double lineHeight) {
+    final key = (lesson, scale, lineHeight);
+    if (_blocksKey != key) {
+      _blocksKey = key;
+      _blocks = [
+        for (final part in MarkdownView.split(lesson.markdown))
+          MarkdownView(
+            data: part,
+            fontScale: scale,
+            lineHeight: lineHeight,
+            quizzes: lesson.quizzes,
+          ),
+      ];
     }
-    return _content!;
+    return _blocks;
   }
 
   @override
@@ -212,7 +230,7 @@ class _LessonScreenState extends State<LessonScreen> {
                   const SizedBox(height: 8),
                 ],
               ),
-              _markdown(scale, state.lineHeight),
+              ..._content(scale, state.lineHeight),
               const SizedBox(height: 32),
               _LessonFooter(lesson: lesson),
             ],

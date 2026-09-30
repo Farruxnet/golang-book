@@ -34,13 +34,14 @@ class HomeScreen extends StatelessWidget {
                       IconButton(
                         tooltip: context.s.search,
                         icon: const Icon(Icons.search_rounded),
-                        onPressed: () => _push(context, const SearchScreen()),
+                        onPressed: () =>
+                            pushScreen<void>(context, const SearchScreen()),
                       ),
                       IconButton(
                         tooltip: context.s.bookmarks,
                         icon: const Icon(Icons.bookmark_border_rounded),
                         onPressed: () =>
-                            _push(context, const BookmarksScreen()),
+                            pushScreen<void>(context, const BookmarksScreen()),
                       ),
                     ],
                   ),
@@ -69,10 +70,6 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-
-  static void _push(BuildContext context, Widget screen) =>
-      Navigator.of(context)
-          .push(MaterialPageRoute<void>(builder: (_) => screen));
 }
 
 /// Resume the lesson in progress, or start the next unfinished one.

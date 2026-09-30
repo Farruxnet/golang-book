@@ -24,7 +24,7 @@ class AppState extends ChangeNotifier {
           ) ??
           1.0,
       accentListenable = ValueNotifier(_readAccent(_prefs)),
-      _language = _safe(() => _prefs.getString(_kLanguage), null) ?? S.defaultCode,
+      languageListenable = ValueNotifier(_readLanguage(_prefs)),
       _lineHeight = _readLineHeight(_prefs),
       _haptics = _safe(() => _prefs.getBool(_kHaptics), null) ?? true,
       _onboarded = _safe(() => _prefs.getBool(_kOnboarded), null) ?? false,
@@ -71,7 +71,6 @@ class AppState extends ChangeNotifier {
   String? _lastLessonKey;
   double _fontScale;
   double _lineHeight;
-  String _language;
   bool _haptics;
   bool _onboarded;
   int _xp;
@@ -132,6 +131,11 @@ class AppState extends ChangeNotifier {
   static int _readAccent(SharedPreferences p) {
     final i = _safe(() => p.getInt(_kAccent), null) ?? 0;
     return i >= 0 && i < AppTheme.accents.length ? i : 0;
+  }
+
+  static String _readLanguage(SharedPreferences p) {
+    final code = _safe(() => p.getString(_kLanguage), null);
+    return S.codes.contains(code) ? code! : S.defaultCode;
   }
 
   static double _readLineHeight(SharedPreferences p) {
@@ -344,12 +348,12 @@ class AppState extends ChangeNotifier {
   double get lineHeight => _lineHeight;
   bool get haptics => _haptics;
 
-  /// One of [S.codes]; English until the reader picks another one.
-  String get language =>
-      S.codes.contains(_language) ? _language : S.defaultCode;
+  /// One of [S.codes]; English until the reader picks another one. The app
+  /// listens to it to load the lessons in the new language.
+  final ValueNotifier<String> languageListenable;
 
-  /// The language the interface is shown in.
-  String get languageCode => language;
+  /// The language of the interface and the lessons.
+  String get language => languageListenable.value;
 
   /// Whether the welcome flow (language and intro) has been completed.
   bool get onboarded => _onboarded;
@@ -361,7 +365,8 @@ class AppState extends ChangeNotifier {
   }
 
   set language(String value) {
-    _language = value;
+    if (!S.codes.contains(value) || value == language) return;
+    languageListenable.value = value;
     _prefs.setString(_kLanguage, value);
     notifyListeners();
   }
@@ -442,6 +447,12 @@ class AppScope extends InheritedNotifier<AppState> {
 
   final Book book;
 
+  /// Dependents rebuild when the book is swapped (another language) as well
+  /// as when the state changes.
+  @override
+  bool updateShouldNotify(AppScope oldWidget) =>
+      oldWidget.book != book || super.updateShouldNotify(oldWidget);
+
   static AppScope _of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<AppScope>()!;
 
@@ -453,6 +464,6 @@ extension AppScopeX on BuildContext {
   AppState get appState => AppScope.stateOf(this);
 
   /// Interface texts in the language chosen in Config.
-  S get s => S(AppScope.stateOf(this).languageCode);
+  S get s => S(AppScope.stateOf(this).language);
   Book get book => AppScope.bookOf(this);
 }

@@ -2,7 +2,8 @@ import 'dart:ui';
 
 /// Interface texts of the app in Uzbek, English and Russian.
 ///
-/// Lesson content is not translated here; it comes from the book itself.
+/// Lesson content is not here: translated lessons live in
+/// `assets/content/i18n/` and are loaded by the book repository.
 /// Each text is a getter (or a method when it has parameters) with its three
 /// translations side by side, so a missing translation is easy to spot.
 class S {
@@ -231,9 +232,9 @@ class S {
   );
   String get language => _t('Language', 'Til', 'Язык');
   String get languageHint => _t(
-    'Language of menus and buttons. Lessons are in Uzbek.',
-    "Menyu va tugmalar tili. Darslar o'zbek tilida.",
-    'Язык меню и кнопок. Уроки на узбекском языке.',
+    'Language of the lessons, menus and buttons.',
+    'Darslar, menyu va tugmalar tili.',
+    'Язык уроков, меню и кнопок.',
   );
   String get appearance => _t('Appearance', 'Ko‘rinish', 'Внешний вид');
   String get theme => _t('Theme', 'Mavzu', 'Тема');
@@ -335,11 +336,11 @@ class S {
   );
   String get introLearnBody => _t(
     '48 lessons from go-lang.uz, from your first program to concurrency. '
-        'Lessons are in Uzbek and work offline.',
+        'Lessons are in your language and work offline.',
     "go-lang.uz dan 48 ta dars: birinchi dasturdan concurrency'gacha. "
-        "Darslar o'zbek tilida va internetsiz ishlaydi.",
+        "Darslar o'z tilingizda va internetsiz ishlaydi.",
     '48 уроков с go-lang.uz: от первой программы до конкурентности. '
-        'Уроки на узбекском и работают без интернета.',
+        'Уроки на вашем языке и работают без интернета.',
   );
   String get introProgressTitle => _t(
     'Build a daily habit',
@@ -476,10 +477,10 @@ class S {
     'Не удалось открыть книгу',
   );
   String get loadFailedBody => _t(
-    'Please restart the app. If this keeps happening, reinstall it.',
-    'Ilovani qayta ishga tushiring. Muammo takrorlansa, ilovani qayta '
-        "o'rnating.",
-    'Перезапустите приложение. Если ошибка повторяется, '
-        'переустановите его.',
+    'Try again. If this keeps happening, restart or reinstall the app.',
+    "Qayta urinib ko'ring. Muammo takrorlansa, ilovani qayta ishga "
+        "tushiring yoki qayta o'rnating.",
+    'Попробуйте ещё раз. Если ошибка повторяется, перезапустите или '
+        'переустановите приложение.',
   );
 }

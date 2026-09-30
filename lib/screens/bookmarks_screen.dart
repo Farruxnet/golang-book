@@ -20,7 +20,7 @@ class BookmarksScreen extends StatelessWidget {
               message: context.s.noBookmarksHint,
             )
           : ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              padding: listPadding(context),
               children: [LessonGroup(lessons: lessons, showSection: true)],
             ),
     );

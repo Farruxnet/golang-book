@@ -15,10 +15,9 @@ void openQuizSession(
   required List<Quiz> quizzes,
 }) {
   if (quizzes.isEmpty) return;
-  Navigator.of(context).push(
-    MaterialPageRoute<void>(
-      builder: (_) => QuizSessionScreen(title: title, quizzes: quizzes),
-    ),
+  pushScreen<void>(
+    context,
+    QuizSessionScreen(title: title, quizzes: quizzes),
   );
 }
 

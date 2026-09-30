@@ -27,16 +27,23 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
   /// (scroll positions are kept); hidden ones have their tickers paused.
   late final _fade = AnimationController(
     vsync: this,
-    duration: const Duration(milliseconds: 220),
+    duration: const Duration(milliseconds: 260),
     value: 1,
   );
-  late final _opacity = CurvedAnimation(parent: _fade, curve: Curves.easeOut);
+  late final _opacity = CurvedAnimation(
+    parent: _fade,
+    curve: Curves.easeOutCubic,
+  );
+  late final _offset = Tween(
+    begin: const Offset(0, 0.012),
+    end: Offset.zero,
+  ).animate(_opacity);
 
   void _select(int i) {
     if (i == _index) return;
     Haptics.selection();
     setState(() => _index = i);
-    _fade.forward(from: 0.3);
+    _fade.forward(from: 0);
   }
 
   @override
@@ -57,14 +64,17 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
       child: Scaffold(
         body: FadeTransition(
           opacity: _opacity,
-          child: IndexedStack(
-            index: _index,
-            children: const [
-              HomeScreen(),
-              PracticeScreen(),
-              ProgressScreen(),
-              ConfigScreen(),
-            ],
+          child: SlideTransition(
+            position: _offset,
+            child: IndexedStack(
+              index: _index,
+              children: const [
+                HomeScreen(),
+                PracticeScreen(),
+                ProgressScreen(),
+                ConfigScreen(),
+              ],
+            ),
           ),
         ),
         bottomNavigationBar: NavigationBar(
@@ -72,23 +82,23 @@ class _ShellState extends State<Shell> with SingleTickerProviderStateMixin {
           onDestinationSelected: _select,
           destinations: [
             NavigationDestination(
-              icon: Icon(Icons.menu_book_outlined),
-              selectedIcon: Icon(Icons.menu_book_rounded),
+              icon: const Icon(Icons.menu_book_outlined),
+              selectedIcon: const Icon(Icons.menu_book_rounded),
               label: context.s.navLearn,
             ),
             NavigationDestination(
-              icon: Icon(Icons.quiz_outlined),
-              selectedIcon: Icon(Icons.quiz_rounded),
+              icon: const Icon(Icons.quiz_outlined),
+              selectedIcon: const Icon(Icons.quiz_rounded),
               label: context.s.navPractice,
             ),
             NavigationDestination(
-              icon: Icon(Icons.insights_outlined),
-              selectedIcon: Icon(Icons.insights_rounded),
+              icon: const Icon(Icons.insights_outlined),
+              selectedIcon: const Icon(Icons.insights_rounded),
               label: context.s.navProgress,
             ),
             NavigationDestination(
-              icon: Icon(Icons.tune_outlined),
-              selectedIcon: Icon(Icons.tune_rounded),
+              icon: const Icon(Icons.tune_outlined),
+              selectedIcon: const Icon(Icons.tune_rounded),
               label: context.s.navConfig,
             ),
           ],

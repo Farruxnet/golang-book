@@ -8,6 +8,7 @@ import 'package:golang_book/main.dart';
 import 'package:golang_book/screens/lesson_screen.dart';
 import 'package:golang_book/state/app_state.dart';
 import 'package:golang_book/theme.dart';
+import 'package:golang_book/widgets/markdown_view.dart';
 import 'package:golang_book/widgets/quiz_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -207,7 +208,6 @@ void main() {
     state.language = 'uz';
     final reloaded = AppState(await SharedPreferences.getInstance());
     expect(reloaded.language, 'uz');
-    expect(reloaded.languageCode, 'uz');
 
     SharedPreferences.setMockInitialValues({'language': 'xx'});
     final bad = AppState(await SharedPreferences.getInstance());
@@ -241,13 +241,13 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Русский'));
     await tester.pumpAndSettle();
-    expect(state.languageCode, 'ru');
+    expect(state.language, 'ru');
     expect(find.text('Учёба'), findsWidgets);
     expect(find.text('Learn'), findsNothing);
 
     await tester.tap(find.text("O'zbekcha"));
     await tester.pumpAndSettle();
-    expect(state.languageCode, 'uz');
+    expect(state.language, 'uz');
     expect(find.text("O'qish"), findsWidgets);
   });
 
@@ -336,5 +336,33 @@ void main() {
     await tester.tap(find.text('Privacy policy'));
     await tester.pumpAndSettle();
     expect(find.text('No tracking'), findsOneWidget);
+  });
+
+  test('long lessons are split at headings, never inside code', () {
+    const md = '# A\ntext\n```go\n# not a heading\n```\n## B\nmore\n### C\n';
+    final parts = MarkdownView.split(md);
+    expect(parts, hasLength(3));
+    expect(parts[0], contains('# not a heading'));
+    expect(parts[1], startsWith('## B'));
+    expect(parts[2], startsWith('### C'));
+  });
+
+  testWidgets('lessons load in every language with the same keys', (
+    tester,
+  ) async {
+    final books = (await tester.runAsync(
+      () => Future.wait([
+        for (final code in S.codes)
+          BookRepository.load(rootBundle, language: code),
+      ]),
+    ))!;
+    final keys = [for (final b in books) b.allLessons.map((l) => l.key)];
+    for (final (i, b) in books.indexed) {
+      expect(b.language, S.codes[i]);
+      expect(b.complete, isTrue);
+      expect(keys[i], orderedEquals(keys.first));
+    }
+    final titles = {for (final b in books) b.allLessons.first.title};
+    expect(titles, hasLength(S.codes.length));
   });
 }

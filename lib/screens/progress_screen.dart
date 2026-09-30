@@ -115,10 +115,9 @@ class ProgressScreen extends StatelessWidget {
                           leading: const Icon(Icons.bookmark_border_rounded),
                           title: Text(context.s.bookmarks),
                           trailing: Text('${state.bookmarks.length}'),
-                          onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => const BookmarksScreen(),
-                            ),
+                          onTap: () => pushScreen<void>(
+                            context,
+                            const BookmarksScreen(),
                           ),
                         ),
                         const Divider(indent: 56),

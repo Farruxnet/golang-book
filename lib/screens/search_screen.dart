@@ -91,7 +91,7 @@ class _SearchScreenState extends State<SearchScreen> {
               message: context.s.tryDifferent,
             )
           : ListView(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+              padding: listPadding(context),
               children: [
                 LessonGroup(
                   lessons: [for (final r in results) r.$1],

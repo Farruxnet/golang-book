@@ -1,5 +1,5 @@
 name: golang_book
-description: "Learn Go from Uzbek lessons, offline."
+description: "Learn Go offline, in Uzbek, English or Russian."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -66,6 +66,10 @@ flutter:
   assets:
     - assets/content/
     - assets/content/golang_uz/
+    - assets/content/i18n/en/
+    - assets/content/i18n/en/golang_uz/
+    - assets/content/i18n/ru/
+    - assets/content/i18n/ru/golang_uz/
     - assets/content/images/
 
   # To add assets to your application, add an assets section, like this:

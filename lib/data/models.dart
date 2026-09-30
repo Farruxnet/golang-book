@@ -75,9 +75,16 @@ class Lesson {
 }
 
 class Book {
-  Book(this.sections);
+  Book(this.sections, {this.language = 'uz', this.complete = true});
 
   final List<Section> sections;
+
+  /// Language the lessons were loaded in (one of the app's language codes).
+  final String language;
+
+  /// False when some lesson files could not be read. Saved progress is only
+  /// cleaned up against a complete book, so a broken file never erases it.
+  final bool complete;
 
   late final List<Lesson> allLessons = [for (final s in sections) ...s.lessons];
 
@@ -101,8 +108,10 @@ class Book {
 
   Lesson? lessonByKey(String? key) => key == null ? null : _byKey[key];
 
+  /// Looked up by key, so a lesson from the book in another language (still
+  /// open while the language changed) finds its neighbor too.
   Lesson? nextOf(Lesson lesson) {
-    final i = allLessons.indexOf(lesson);
+    final i = allLessons.indexWhere((l) => l.key == lesson.key);
     return i >= 0 && i < allLessons.length - 1 ? allLessons[i + 1] : null;
   }
 }

@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../data/models.dart';
 import '../screens/lesson_screen.dart';
 import '../state/app_state.dart';
+import 'haptics.dart';
+
+/// Opens [screen] with the app's page transition.
+Future<T?> pushScreen<T>(BuildContext context, Widget screen) =>
+    Navigator.of(context).push(MaterialPageRoute<T>(builder: (_) => screen));
 
 void openLesson(BuildContext context, Lesson lesson, {bool replace = false}) {
   final route = MaterialPageRoute<void>(
@@ -12,6 +18,53 @@ void openLesson(BuildContext context, Lesson lesson, {bool replace = false}) {
       ? Navigator.of(context).pushReplacement(route)
       : Navigator.of(context).push(route);
 }
+
+/// Opens a web link outside the app. A missing browser or a bad link is
+/// logged, never thrown at the caller.
+Future<void> openExternal(Uri uri) async {
+  try {
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } catch (e) {
+    debugPrint('Could not open $uri: $e');
+  }
+}
+
+/// Asks before a destructive action; calls [onConfirm] only on a yes.
+Future<void> confirmAction(
+  BuildContext context, {
+  required String title,
+  required String message,
+  required String action,
+  required VoidCallback onConfirm,
+}) async {
+  final s = context.s;
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(title),
+      content: Text(message),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(ctx, false),
+          child: Text(s.cancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(ctx, true),
+          child: Text(action),
+        ),
+      ],
+    ),
+  );
+  if (ok == true) {
+    Haptics.medium();
+    onConfirm();
+  }
+}
+
+/// List padding that keeps the last item clear of the system navigation bar
+/// (the app draws edge to edge).
+EdgeInsets listPadding(BuildContext context, {double top = 8}) =>
+    EdgeInsets.fromLTRB(16, top, 16, 32 + MediaQuery.paddingOf(context).bottom);
 
 /// Marks when a screen appeared, so [FadeSlideIn] only animates the first
 /// view of it — not items scrolled into view later.
@@ -292,6 +345,86 @@ class ProgressLine extends StatelessWidget {
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeOutCubic,
       builder: (_, v, _) => LinearProgressIndicator(value: v, color: color),
+    );
+  }
+}
+
+/// System, light or dark theme; used in Config and the reading sheet.
+class ThemeModeSelector extends StatelessWidget {
+  const ThemeModeSelector({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.appState;
+    final s = context.s;
+    return SizedBox(
+      width: double.infinity,
+      child: SegmentedButton<ThemeMode>(
+        segments: [
+          ButtonSegment(
+            value: ThemeMode.system,
+            icon: const Icon(Icons.brightness_auto_rounded),
+            label: Text(s.themeSystem),
+          ),
+          ButtonSegment(
+            value: ThemeMode.light,
+            icon: const Icon(Icons.light_mode_rounded),
+            label: Text(s.themeLight),
+          ),
+          ButtonSegment(
+            value: ThemeMode.dark,
+            icon: const Icon(Icons.dark_mode_rounded),
+            label: Text(s.themeDark),
+          ),
+        ],
+        selected: {state.themeMode},
+        onSelectionChanged: (v) {
+          Haptics.selection();
+          state.themeMode = v.first;
+        },
+      ),
+    );
+  }
+}
+
+/// Lesson text size: a label with the percentage above a slider.
+class FontScaleSlider extends StatelessWidget {
+  const FontScaleSlider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.appState;
+    final label = Theme.of(context).textTheme.labelLarge;
+    const range = AppState.fontScaleRange;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(context.s.textSize, style: label),
+            const Spacer(),
+            Text('${(state.fontScale * 100).round()}%', style: label),
+          ],
+        ),
+        Row(
+          children: [
+            const Text('A', style: TextStyle(fontSize: 14)),
+            Expanded(
+              child: Slider(
+                value: state.fontScale.clamp(range.min, range.max),
+                min: range.min,
+                max: range.max,
+                divisions: 11,
+                onChanged: (v) {
+                  if (v != state.fontScale) Haptics.selection();
+                  state.fontScale = v;
+                },
+              ),
+            ),
+            const Text('A', style: TextStyle(fontSize: 24)),
+          ],
+        ),
+      ],
     );
   }
 }

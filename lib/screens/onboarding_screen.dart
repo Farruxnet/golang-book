@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../l10n/strings.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
+import '../widgets/brand_mark.dart';
 import '../widgets/haptics.dart';
 
 /// First launch: pick the language, then three short intro pages.
@@ -211,7 +212,7 @@ class _LanguagePage extends StatelessWidget {
       children: [
         Row(
           children: [
-            const _BrandMark(size: 56),
+            const BrandMark(size: 56),
             const SizedBox(width: 14),
             Expanded(child: _Greeting(style: theme.textTheme.headlineMedium)),
           ],
@@ -238,36 +239,6 @@ class _LanguagePage extends StatelessWidget {
           const SizedBox(height: 12),
         ],
       ],
-    );
-  }
-}
-
-/// The app mark: "Go" set in the code font on the accent color.
-class _BrandMark extends StatelessWidget {
-  const _BrandMark({required this.size});
-
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      width: size,
-      height: size,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: scheme.primary,
-        borderRadius: BorderRadius.circular(size * 0.3),
-      ),
-      child: Text(
-        'Go',
-        style: TextStyle(
-          fontFamily: AppTheme.mono,
-          fontWeight: FontWeight.w800,
-          fontSize: size * 0.38,
-          color: scheme.onPrimary,
-        ),
-      ),
     );
   }
 }
