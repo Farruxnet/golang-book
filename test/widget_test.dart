@@ -307,4 +307,34 @@ void main() {
     expect(find.text('No quizzes yet'), findsOneWidget);
     expect(find.text('Quick quiz'), findsNothing);
   });
+
+  test('saved data about removed lessons is dropped', () async {
+    SharedPreferences.setMockInitialValues({
+      'onboarded': true,
+      'completed': ['basic/01_introduction', 'test/interfaces'],
+      'bookmarks': ['basic/02_variables'],
+      'last_lesson': 'basic/01_introduction',
+      'daily_goal': 7,
+    });
+    final s = AppState(await SharedPreferences.getInstance())
+      ..prune(quizBook());
+    expect(s.completedCount, 1);
+    expect(s.bookmarks, isEmpty);
+    expect(s.lastLessonKey, isNull);
+    expect(s.dailyGoal, 10);
+  });
+
+  testWidgets('privacy policy opens from Config', (tester) async {
+    await pumpApp(tester);
+    await tester.tap(find.text('Config').last);
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.text('Privacy policy'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.text('Privacy policy'));
+    await tester.pumpAndSettle();
+    expect(find.text('No tracking'), findsOneWidget);
+  });
 }

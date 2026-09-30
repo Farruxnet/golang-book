@@ -13,10 +13,10 @@ progress tracking, streaks and XP on top.
 
 | Tab | What's there |
 |-----|--------------|
-| **Learn** | Continue reading, daily goal & level, daily challenge, sections with their lessons |
-| **Practice** | Mixed quiz, daily challenge, quiz by topic, projects |
+| **Learn** | Continue reading, search, bookmarks, the lesson list |
+| **Practice** | Quick quiz, question of the day, quiz by topic (shows an empty state until lessons have quizzes) |
 | **Progress** | Level/XP, streak, stats, 12-week activity heatmap, daily goal, bookmarks |
-| **Config** | Language (Uzbek/English/Russian), theme (system/light/dark), accent color, text size, line spacing, daily goal, haptics, reset |
+| **Config** | Language (Uzbek/English/Russian), theme (system/light/dark), accent color, text size, line spacing, daily goal, haptics, reset, about (privacy policy, licenses) |
 
 ## Languages
 
@@ -25,6 +25,22 @@ chosen on first launch (the welcome screen is followed by a short intro) and lat
 **Config → Language**. English is the default.
 All of them live in `lib/l10n/strings.dart`; add a language by adding its code to `S.codes` and a
 translation to every entry. Lesson content is not translated.
+
+## Release checklist
+
+- **App id:** `uz.golang.book` (`android/app/build.gradle.kts`). Change it before the first upload if you want another one; it can't change after.
+- **Version:** `version:` in `pubspec.yaml` and `AppInfo.version` in `lib/app_info.dart` must match. Raise the build number (`+N`) on every upload.
+- **Signing:** create an upload key and `android/key.properties` (git-ignored):
+  ```properties
+  storeFile=/absolute/path/upload-keystore.jks
+  storePassword=...
+  keyAlias=upload
+  keyPassword=...
+  ```
+  Without it release builds are signed with the debug key and the Play Store rejects them.
+- **Build:** `flutter build appbundle --release`
+- **Privacy policy:** the store needs a public URL. Publish `PRIVACY.md` (same text as Config → About → Privacy policy) and update `AppInfo.privacyUpdated` when it changes.
+- **Data safety form:** no data collected or shared; no internet permission.
 
 ## Adding content
 

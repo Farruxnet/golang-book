@@ -231,9 +231,9 @@ class S {
   );
   String get language => _t('Language', 'Til', 'Язык');
   String get languageHint => _t(
-    'Language of the app. Lessons stay as they are.',
-    "Ilova tili. Darslar o'zgarmaydi.",
-    'Язык приложения. Уроки не меняются.',
+    'Language of menus and buttons. Lessons are in Uzbek.',
+    "Menyu va tugmalar tili. Darslar o'zbek tilida.",
+    'Язык меню и кнопок. Уроки на узбекском языке.',
   );
   String get appearance => _t('Appearance', 'Ko‘rinish', 'Внешний вид');
   String get theme => _t('Theme', 'Mavzu', 'Тема');
@@ -334,25 +334,25 @@ class S {
     'Изучайте Go шаг за шагом',
   );
   String get introLearnBody => _t(
-    'Short lessons with clear examples. The app remembers where you '
-        'stopped, so you can pick up right there.',
-    "Aniq misollar bilan qisqa darslar. Ilova qayerda to'xtaganingizni "
-        "eslab qoladi, shu joydan davom etasiz.",
-    'Короткие уроки с понятными примерами. Приложение запоминает, где вы '
-        'остановились, и вы продолжаете с того же места.',
+    '48 lessons from go-lang.uz, from your first program to concurrency. '
+        'Lessons are in Uzbek and work offline.',
+    "go-lang.uz dan 48 ta dars: birinchi dasturdan concurrency'gacha. "
+        "Darslar o'zbek tilida va internetsiz ishlaydi.",
+    '48 уроков с go-lang.uz: от первой программы до конкурентности. '
+        'Уроки на узбекском и работают без интернета.',
   );
-  String get introPracticeTitle => _t(
-    'Check yourself with quizzes',
-    "Testlar bilan o'zingizni sinang",
-    'Проверяйте себя тестами',
+  String get introProgressTitle => _t(
+    'Build a daily habit',
+    'Kunlik odat hosil qiling',
+    'Сделайте учёбу привычкой',
   );
-  String get introPracticeBody => _t(
-    'Quick quizzes, a new question every day, XP and streaks keep you '
-        'moving.',
-    "Tezkor testlar, har kuni yangi savol, XP va ketma-ket kunlar sizni "
-        "harakatda ushlab turadi.",
-    'Быстрые тесты, новый вопрос каждый день, очки опыта и серии '
-        'помогают не сбиваться с ритма.',
+  String get introProgressBody => _t(
+    'Set a daily goal, keep your streak going and watch your progress grow '
+        'lesson by lesson.',
+    "Kunlik maqsad qo'ying, ketma-ket kunlarni uzmang va har dars bilan "
+        "natijangiz o'sishini kuzating.",
+    'Поставьте дневную цель, не прерывайте серию и следите, как растёт '
+        'прогресс с каждым уроком.',
   );
   String get introConfigTitle => _t(
     'Make it yours',
@@ -367,6 +367,106 @@ class S {
     'В настройках выберите тему и цвет, измените размер текста и '
         'поставьте дневную цель.',
   );
+
+  // ---- About and privacy ------------------------------------------------------
+
+  String get about => _t('About', 'Ilova haqida', 'О приложении');
+  String version(String v) => _t('Version $v', 'Versiya $v', 'Версия $v');
+  String get privacyPolicy =>
+      _t('Privacy policy', 'Maxfiylik siyosati', 'Политика конфиденциальности');
+  String get privacyShort => _t(
+    'No account, no tracking, no data leaves your phone',
+    "Hisob yo'q, kuzatuv yo'q, ma'lumot telefondan chiqmaydi",
+    'Без аккаунта и слежки, данные не покидают телефон',
+  );
+  String get licenses =>
+      _t('Open-source licenses', 'Ochiq kodli litsenziyalar', 'Лицензии открытого ПО');
+  String get website => _t('Website', 'Veb-sayt', 'Сайт');
+  String privacyUpdated(String date) => _t(
+    'Last updated: $date',
+    'Oxirgi yangilanish: $date',
+    'Последнее обновление: $date',
+  );
+
+  /// Sections of the privacy policy: heading and text.
+  List<(String, String)> get privacySections => [
+    (
+      _t('Summary', 'Qisqacha', 'Кратко'),
+      _t(
+        'Go Book does not collect, store on servers, sell or share any '
+            'personal data. It works without an account and without the '
+            'internet.',
+        "Go Book hech qanday shaxsiy ma'lumotni yig'maydi, serverda "
+            "saqlamaydi, sotmaydi va boshqalarga bermaydi. Ilova hisobsiz va "
+            "internetsiz ishlaydi.",
+        'Go Book не собирает, не хранит на серверах, не продаёт и не '
+            'передаёт персональные данные. Приложение работает без аккаунта '
+            'и без интернета.',
+      ),
+    ),
+    (
+      _t('Data on your device', "Qurilmadagi ma'lumotlar", 'Данные на устройстве'),
+      _t(
+        'Your progress (completed lessons, bookmarks, reading position, '
+            'quiz answers, streaks, XP) and settings are saved only on this '
+            'device. You can erase progress in Config → Reset progress; '
+            'uninstalling the app removes everything.',
+        "Natijalaringiz (tugatilgan darslar, xatcho'plar, o'qish joyi, test "
+            "javoblari, ketma-ket kunlar, XP) va sozlamalar faqat shu "
+            "qurilmada saqlanadi. Ularni Sozlamalar → Natijalarni tozalash "
+            "orqali o'chirishingiz mumkin; ilovani o'chirsangiz hammasi "
+            "o'chadi.",
+        'Прогресс (пройденные уроки, закладки, место чтения, ответы на '
+            'тесты, серии, очки опыта) и настройки хранятся только на этом '
+            'устройстве. Прогресс можно стереть в Настройки → Сбросить '
+            'прогресс; удаление приложения удаляет всё.',
+      ),
+    ),
+    (
+      _t('No tracking', "Kuzatuv yo'q", 'Без слежки'),
+      _t(
+        'The app has no analytics, advertising or crash-reporting services '
+            'and does not request internet access.',
+        "Ilovada analitika, reklama yoki xatolarni yuboruvchi xizmatlar "
+            "yo'q va u internetga ruxsat so'ramaydi.",
+        'В приложении нет аналитики, рекламы и сервисов отчётов об ошибках, '
+            'и оно не запрашивает доступ к интернету.',
+      ),
+    ),
+    (
+      _t('Links', 'Havolalar', 'Ссылки'),
+      _t(
+        'Links in lessons open in your browser. The privacy policy of the '
+            'opened website applies there.',
+        "Darslardagi havolalar brauzeringizda ochiladi. U yerda ochilgan "
+            "saytning maxfiylik siyosati amal qiladi.",
+        'Ссылки в уроках открываются в браузере. Там действует политика '
+            'конфиденциальности открытого сайта.',
+      ),
+    ),
+    (
+      _t('Children', 'Bolalar', 'Дети'),
+      _t(
+        'The app is suitable for all ages. Since no data is collected, no '
+            "data from children is collected either.",
+        "Ilova barcha yoshdagilar uchun mos. Hech qanday ma'lumot "
+            "yig'ilmagani uchun bolalardan ham ma'lumot yig'ilmaydi.",
+        'Приложение подходит для любого возраста. Поскольку данные не '
+            'собираются, данные детей тоже не собираются.',
+      ),
+    ),
+    (
+      _t('Changes and contact', "O'zgarishlar va aloqa", 'Изменения и связь'),
+      _t(
+        'If this policy changes, the new version will appear in the app. '
+            'Questions: go-lang.uz.',
+        "Siyosat o'zgarsa, yangi versiyasi ilovada paydo bo'ladi. Savollar "
+            "uchun: go-lang.uz.",
+        'Если политика изменится, новая версия появится в приложении. '
+            'Вопросы: go-lang.uz.',
+      ),
+    ),
+  ];
 
   // ---- Startup failure ------------------------------------------------------
 

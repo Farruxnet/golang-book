@@ -29,7 +29,7 @@ class AppState extends ChangeNotifier {
       _haptics = _safe(() => _prefs.getBool(_kHaptics), null) ?? true,
       _onboarded = _safe(() => _prefs.getBool(_kOnboarded), null) ?? false,
       _xp = _safe(() => _prefs.getInt(_kXp), null) ?? 0,
-      _dailyGoal = _safe(() => _prefs.getInt(_kDailyGoal), null) ?? 10,
+      _dailyGoal = _readDailyGoal(_prefs),
       _answers = _readMap<int>(_prefs, _kAnswers),
       _activity = _readMap<int>(_prefs, _kActivity),
       _scroll = _readMap<num>(_prefs, _kScroll) {
@@ -124,6 +124,11 @@ class AppState extends ChangeNotifier {
         : ThemeMode.system;
   }
 
+  static int _readDailyGoal(SharedPreferences p) {
+    final v = _safe(() => p.getInt(_kDailyGoal), null);
+    return v != null && dailyGoalOptions.contains(v) ? v : 10;
+  }
+
   static int _readAccent(SharedPreferences p) {
     final i = _safe(() => p.getInt(_kAccent), null) ?? 0;
     return i >= 0 && i < AppTheme.accents.length ? i : 0;
@@ -136,6 +141,31 @@ class AppState extends ChangeNotifier {
 
   void _writeMap(String key, Map<String, Object> map) =>
       _prefs.setString(key, jsonEncode(map));
+
+  /// Drops saved data about lessons and quizzes that are no longer in the
+  /// book (e.g. removed in an update), so counts match the current content.
+  void prune(Book book) {
+    final lessons = {for (final l in book.allLessons) l.key};
+    final quizzes = {for (final q in book.allQuizzes) q.id};
+    final removed =
+        _completed.where((k) => !lessons.contains(k)).length +
+        _bookmarks.where((k) => !lessons.contains(k)).length;
+    _completed.removeWhere((k) => !lessons.contains(k));
+    _bookmarks.removeWhere((k) => !lessons.contains(k));
+    _scroll.removeWhere((k, _) => !lessons.contains(k));
+    _answers.removeWhere((k, _) => !quizzes.contains(k));
+    if (_lastLessonKey != null && !lessons.contains(_lastLessonKey)) {
+      _lastLessonKey = null;
+      _prefs.remove(_kLastLesson);
+    }
+    if (removed > 0) {
+      _prefs
+        ..setStringList(_kCompleted, _completed.toList())
+        ..setStringList(_kBookmarks, _bookmarks.toList());
+    }
+    _writeMap(_kScroll, _scroll);
+    _writeMap(_kAnswers, _answers);
+  }
 
   // ---- Reading progress -----------------------------------------------------
 

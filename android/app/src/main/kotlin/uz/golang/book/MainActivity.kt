@@ -1,4 +1,4 @@
-package com.example.golang_book
+package uz.golang.book
 
 import io.flutter.embedding.android.FlutterActivity
 

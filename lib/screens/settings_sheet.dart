@@ -13,9 +13,6 @@ Future<void> showSettingsSheet(BuildContext context) {
 class _SettingsSheet extends StatelessWidget {
   const _SettingsSheet();
 
-  static const _min = 0.85;
-  static const _max = 1.4;
-
   @override
   Widget build(BuildContext context) {
     final state = context.appState;
@@ -79,9 +76,9 @@ class _SettingsSheet extends StatelessWidget {
                   const Text('A', style: TextStyle(fontSize: 14)),
                   Expanded(
                     child: Slider(
-                      value: state.fontScale.clamp(_min, _max),
-                      min: _min,
-                      max: _max,
+                      value: state.fontScale.clamp(AppState.fontScaleRange.min, AppState.fontScaleRange.max),
+                      min: AppState.fontScaleRange.min,
+                      max: AppState.fontScaleRange.max,
                       divisions: 11,
                       onChanged: (v) => state.fontScale = v,
                     ),

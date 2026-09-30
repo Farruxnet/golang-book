@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../app_info.dart';
 import '../l10n/strings.dart';
 import '../state/app_state.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 import '../widgets/markdown_view.dart';
+import 'privacy_screen.dart';
 
 /// The Config tab: how the book looks and behaves.
 class ConfigScreen extends StatelessWidget {
@@ -292,6 +295,62 @@ class ConfigScreen extends StatelessWidget {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            FadeSlideIn(
+              index: 6,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SectionHeader(s.about),
+                  AppCard(
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.privacy_tip_outlined),
+                          title: Text(s.privacyPolicy),
+                          subtitle: Text(s.privacyShort),
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const PrivacyScreen(),
+                            ),
+                          ),
+                        ),
+                        const Divider(indent: 56),
+                        ListTile(
+                          leading: const Icon(Icons.public_rounded),
+                          title: Text(s.website),
+                          subtitle: const Text('go-lang.uz'),
+                          trailing: const Icon(Icons.open_in_new_rounded),
+                          onTap: () => launchUrl(
+                            Uri.parse(AppInfo.website),
+                            mode: LaunchMode.externalApplication,
+                          ),
+                        ),
+                        const Divider(indent: 56),
+                        ListTile(
+                          leading: const Icon(Icons.description_outlined),
+                          title: Text(s.licenses),
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () => showLicensePage(
+                            context: context,
+                            applicationName: AppInfo.name,
+                            applicationVersion: AppInfo.version,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '${AppInfo.name} · ${s.version(AppInfo.version)}',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: scheme.onSurfaceVariant,
                     ),
                   ),
                 ],

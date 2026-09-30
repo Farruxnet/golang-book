@@ -24,7 +24,7 @@ Future<void> main() async {
       SharedPreferences.getInstance(),
       BookRepository.load(rootBundle),
     ).wait;
-    runApp(GoBookApp(book: book, state: AppState(prefs)));
+    runApp(GoBookApp(book: book, state: AppState(prefs)..prune(book)));
   } catch (error, stack) {
     FlutterError.reportError(
       FlutterErrorDetails(exception: error, stack: stack),

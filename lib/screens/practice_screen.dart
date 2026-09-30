@@ -21,6 +21,9 @@ class PracticeScreen extends StatelessWidget {
     return pool.take(_mixedCount).toList();
   }
 
+  static int _mixedSize(Book book) =>
+      math.min(_mixedCount, book.allQuizzes.length);
+
   @override
   Widget build(BuildContext context) {
     final book = context.book;
@@ -56,7 +59,7 @@ class PracticeScreen extends StatelessWidget {
                 child: _ActionCard(
                   icon: Icons.shuffle_rounded,
                   title: context.s.quickQuiz,
-                  subtitle: context.s.randomQuestions(_mixedCount),
+                  subtitle: context.s.randomQuestions(_mixedSize(book)),
                   onTap: () => openQuizSession(
                     context,
                     title: context.s.quickQuiz,

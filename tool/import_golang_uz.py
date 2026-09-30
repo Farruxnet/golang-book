@@ -120,7 +120,7 @@ def main():
     block = f'''    {{
       "id": "golang_uz",
       "title": "Go asoslari",
-      "subtitle": "Uzbek-language lessons from go-lang.uz: syntax, types, functions, concurrency and the standard library.",
+      "subtitle": "go-lang.uz darslari: sintaksis, turlar, funksiyalar, concurrency va standart kutubxona.",
       "icon": "book",
       "color": "#0EA5A4",
       "lessons": [

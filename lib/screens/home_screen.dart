@@ -97,7 +97,7 @@ class _ContinueCard extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final next = _nextLesson(book, state);
-    final started = state.lastLessonKey != null;
+    final started = book.lessonByKey(state.lastLessonKey) != null;
 
     if (next == null) {
       return AppCard(
