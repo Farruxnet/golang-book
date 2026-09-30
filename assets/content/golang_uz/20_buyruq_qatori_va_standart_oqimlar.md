@@ -378,21 +378,19 @@ func main() {
 
     os.Exit(1)
 }
+```
 
 Bu yerda:
 
-```
-
 ```text
 Tozalash
+```
 
 chiqishi kutilgandek ko‘rinishi mumkin. Lekin `os.Exit()` jarayonni darhol tugatadi. Shu sabab `defer` ishlamaydi.
 
 Bu file yopish, buffer flush qilish, temporary resurslarni tozalash yoki boshqa cleanup ishlari uchun muammo tug‘dirishi mumkin.
 
 Shuning uchun keng tarqalgan yondashuv quyidagicha:
-
-```
 
 ```go
 func run() int {
@@ -405,6 +403,7 @@ func run() int {
 func main() {
     os.Exit(run())
 }
+```
 
 Bu yerda barcha asosiy ishlar `run()` ichida bajariladi.
 
@@ -412,18 +411,15 @@ Bu yerda barcha asosiy ishlar `run()` ichida bajariladi.
 
 Faqat eng oxirida `main()`:
 
-```
-
 ```go
 os.Exit(...)
+```
 
 orqali jarayonning exit codeni belgilaydi.
 
 ## Ishlaydigan CLI misoli
 
 Endi argumentlar, flaglar, `stdout`, `stderr` va exit codelarni bitta dastur ichida birlashtiramiz.
-
-```
 
 ```go
 package main
