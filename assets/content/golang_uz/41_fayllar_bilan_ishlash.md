@@ -601,12 +601,11 @@ for _, path := range paths {
 
     // ...
 }
+```
 
 Agar `paths` ichida minglab fayl bo‘lsa, ularning hammasi tashqi funksiya tugaguncha ochiq qolishi mumkin.
 
 Buning o‘rniga bitta fayl bilan ishlashni alohida funksiyaga ajratish mumkin:
-
-```
 
 ```go
 func processFile(path string) error {
@@ -619,6 +618,7 @@ func processFile(path string) error {
     // ...
     return nil
 }
+```
 
 Bu holda har bir `processFile` chaqiruvi tugagach, tegishli fayl yopiladi.
 
@@ -631,8 +631,6 @@ Fayl yoki katalog haqida metadata olish uchun `os.Stat` ishlatiladi.
 U muvaffaqiyatli bo‘lsa `os.FileInfo` qaytaradi.
 
 Misol:
-
-```
 
 ```go
 package main

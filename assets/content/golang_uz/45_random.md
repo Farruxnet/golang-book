@@ -127,13 +127,13 @@ Agar:
 
 ```go
 rand.Intn(0)
+```
 
 yoki:
 
-```
-
 ```go
 rand.Intn(-5)
+```
 
 kabi qiymat uzatilsa, dastur `panic` qiladi.
 
@@ -146,8 +146,6 @@ Agar yuqori chegara foydalanuvchi, konfiguratsiya yoki tashqi API orqali kelayot
 Lekin amaliyotda ko‘pincha boshqa oraliq kerak bo‘ladi.
 
 Masalan:
-
-```
 
 ```text
 10 dan 15 gacha

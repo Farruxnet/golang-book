@@ -430,23 +430,21 @@ Masalan:
 ```go
 mu.Lock()
 defer mu.Unlock()
+```
 
 to‘g‘ri tartib.
 
 Qulf olinmagan mutexga:
 
-```
-
 ```go
 mu.Unlock()
+```
 
 chaqirish runtime xatosiga olib keladi.
 
 Juda kichik va juda tez-tez chaqiriladigan kritik bo‘limlarda `defer`ning ozgina qo‘shimcha xarajati bo‘lishi mumkin.
 
 Shunday holatda:
-
-```
 
 ```go
 mu.Lock()
